@@ -4,8 +4,6 @@
 package main
 
 import (
-	"flag"
-	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -14,6 +12,7 @@ import (
 	"github.com/maxiepax/go-via/config"
 	ca "github.com/maxiepax/go-via/crypto"
 	"github.com/maxiepax/go-via/db"
+	"github.com/maxiepax/go-via/dhcpd"
 	"github.com/maxiepax/go-via/models"
 	"github.com/maxiepax/go-via/secrets"
 	"github.com/maxiepax/go-via/websockets"
@@ -24,7 +23,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/koding/multiconfig"
 
 	"github.com/sirupsen/logrus"
 
@@ -40,7 +38,7 @@ var (
 
 // @title go-via
 // @version 0.1
-// @description VMware Imaging Appliances written in GO with full HTTP-REST
+// @description VMware Imaging Appliances written in GO with full HTTP-REST API
 
 // @BasePath /v1
 
@@ -48,83 +46,16 @@ func main() {
 
 	logServer := websockets.NewLogServer()
 	logrus.AddHook(logServer.Hook)
-
-	//setup logging
 	logrus.WithFields(logrus.Fields{
 		"version": version,
 		"commit":  commit,
 		"date":    date,
 	}).Infof("Startup")
 
-	//enable config
-	d := multiconfig.New()
-
-	conf := new(config.Config)
-
-	//try to load environment variables and flags.
-	err := d.Load(conf)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Info("failed to load config")
-	}
-
-	//if a file has been implied, also load the content of the configuration file.
-	if conf.File != "" {
-		d = multiconfig.NewWithPath(conf.File)
-
-		err = d.Load(conf)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Info("failed to load config")
-		}
-	}
-
-	//validate configuration file
-	err = d.Validate(conf)
-	if err != nil {
-		flag.Usage()
-		logrus.WithFields(logrus.Fields{
-			"err": err,
-		}).Info("failed to load config")
-	}
-
-	//if no environemnt variables, or configuration file has been declared, serve on all interfaces.
-	if len(conf.Network.Interfaces) == 0 {
-		logrus.Warning("no interfaces have been configured, trying to find interfaces to serve to, will serve on all.")
-		i, err := net.Interfaces()
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"err": err,
-			}).Info("failed to find a usable interface")
-		}
-		for _, v := range i {
-			// dont use loopback interfaces
-			if v.Flags&net.FlagLoopback != 0 {
-				continue
-			}
-			// dont use ptp interfaces
-			if v.Flags&net.FlagPointToPoint != 0 {
-				continue
-			}
-			_, _, err := findIPv4Addr(&v)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"err":   err,
-					"iface": v.Name,
-				}).Warning("interaces does not have a usable ipv4 address")
-				continue
-			}
-			conf.Network.Interfaces = append(conf.Network.Interfaces, v.Name)
-		}
-	}
-
-	// load secrets key
-	key := secrets.Init()
+	// load config file
+	conf := config.Load()
 
 	//connect to database
-	//db.Connect(true)
 	if conf.Debug {
 		db.Connect(true)
 		logrus.SetLevel(logrus.DebugLevel)
@@ -134,22 +65,9 @@ func main() {
 	}
 
 	//migrate all models
-	err = db.DB.AutoMigrate(&models.Pool{}, &models.Address{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{})
+	err := db.DB.AutoMigrate(&models.Pool{}, &models.Address{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{})
 	if err != nil {
 		logrus.Fatal(err)
-	}
-
-	//create the device classes for x86 and arm
-	//64bit x86 UEFI
-	var x86_64 models.DeviceClass
-
-	if res := db.DB.FirstOrCreate(&x86_64, models.DeviceClass{DeviceClassForm: models.DeviceClassForm{Name: "PXE-UEFI_x64", VendorClass: "PXEClient:Arch:00007"}}); res.Error != nil {
-		logrus.Warning(res.Error)
-	}
-	//64bit ARM UEFI
-	var arm_64 models.DeviceClass
-	if res := db.DB.FirstOrCreate(&arm_64, models.DeviceClass{DeviceClassForm: models.DeviceClassForm{Name: "PXE-UEFI_ARM64", VendorClass: "PXEClient:Arch:00011"}}); res.Error != nil {
-		logrus.Warning(res.Error)
 	}
 
 	//create admin user if it doesn't exist
@@ -159,10 +77,13 @@ func main() {
 		logrus.Warning(res.Error)
 	}
 
+	// load secrets key
+	key := secrets.Init()
+
 	// DHCPd
 	if !conf.DisableDhcp {
 		for _, v := range conf.Network.Interfaces {
-			go serve(v)
+			go dhcpd.Init(v)
 		}
 	}
 
@@ -298,7 +219,7 @@ func main() {
 		{
 			images.GET("", api.ListImages)
 			images.GET(":id", api.GetImage)
-			images.POST("", api.CreateImage(conf))
+			images.POST("", api.CreateImage)
 			images.PATCH(":id", api.UpdateImage)
 			images.DELETE(":id", api.DeleteImage)
 		}

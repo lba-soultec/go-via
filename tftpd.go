@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"path"
@@ -207,7 +206,7 @@ func serveBootCfg(filename string, address models.Address, image models.Image, r
 	address.Progresstext = "installation"
 	db.DB.Save(&address)
 
-	bc, err := ioutil.ReadFile(image.Path + "/BOOT.CFG")
+	bc, err := os.ReadFile(image.Path + "/BOOT.CFG")
 	if err != nil {
 		logrus.Warn(err)
 		return

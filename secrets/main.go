@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -48,13 +47,13 @@ func Init() string {
 			"bytes": wr,
 		}).Info("secrets")
 		file.Close()
-		key, _ = ioutil.ReadFile("secret/secret.key")
+		key, _ = os.ReadFile("secret/secret.key")
 	} else {
 		//Database exists, moving on.
 		logrus.WithFields(logrus.Fields{
 			"key": "found existing secret key!",
 		}).Info("secrets")
-		key, _ = ioutil.ReadFile("secret/secret.key")
+		key, _ = os.ReadFile("secret/secret.key")
 	}
 	return string(key)
 }
