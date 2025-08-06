@@ -165,7 +165,7 @@ func GetNextFreeIP(c *gin.Context) {
 
 	// Load the item
 	var item models.PoolWithHosts
-	if res := db.DB.Table("pools").Preload("Addresses", "reimage OR expires > NOW()").First(&item, id); res.Error != nil {
+	if res := db.DB.Table("pools").Preload("Hosts", "reimage OR expires > NOW()").First(&item, id); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			Error(c, http.StatusNotFound, fmt.Errorf("not found")) // 404
 		} else {
@@ -354,7 +354,7 @@ func FindPool(ip string) (*models.PoolWithHosts, error) {
 		return nil, fmt.Errorf("no matching pool found")
 	}
 
-	if res := db.DB.Table("pools").Preload("Addresses").First(&pool, pool.ID); res.Error != nil {
+	if res := db.DB.Table("pools").Preload("Hosts").First(&pool, pool.ID); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("no matching pool found")
 		}
