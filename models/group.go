@@ -42,7 +42,7 @@ type Group struct {
 
 	Pool    *Pool     `json:"pool,omitempty" gorm:"foreignkey:PoolID"`
 	Option  []Option  `json:"option,omitempty" gorm:"foreignkey:PoolID"`
-	Address []Address `json:"address,omitempty" gorm:"foreignkey:GroupID"`
+	Host    []Host `json:"host,omitempty" gorm:"foreignkey:GroupID"`
 
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
@@ -56,7 +56,7 @@ type NoPWGroup struct {
 
 	Pool    *Pool     `json:"pool,omitempty" gorm:"foreignkey:PoolID"`
 	Option  []Option  `json:"option,omitempty" gorm:"foreignkey:PoolID"`
-	Address []Address `json:"address,omitempty" gorm:"foreignkey:GroupID"`
+	Host    []Host    `json:"host,omitempty" gorm:"foreignkey:GroupID"`
 
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`

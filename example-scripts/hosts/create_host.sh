@@ -1,9 +1,11 @@
 curl --header "Content-Type: application/json" \
-  http://localhost:8443/api/v1/groups \
+  --user admin:VMware1! https://localhost:8443/v1/hosts \
+  --insecure \
   --request POST \
-  --data '{ "image_id": 1, "name": "testgrp", "password": "VMware1!", "dns": "172.16.100.4,172.16.100.5", "ntp": "172.16.100.4,172.16.100.5"}'
+  --data '{ "domain": "sfo.rainpole.io", "group_id": 1, "pool_id": 1, "hostname": "sfo01-m01-esx01", "ip": "172.16.60.101", "mac": "00:50:56:8a:7c:09", "reimage": true }'
 
 curl --header "Content-Type: application/json" \
-  http://localhost:8443/api/v1/addresses \
+  --user admin:VMware1! https://localhost:8443/v1/hosts \
+  --insecure \
   --request POST \
-  --data '{ "domain": "vmlab.se", "group_id": 1, "hostname": "testhost", "ip": "172.16.100.12", "progress": 0, "progresstext": "", "reimage": false }'
+  --data '{ "domain": "sfo.rainpole.io", "group_id": 2, "pool_id": 2, "hostname": "sfo01-w01-esx01", "ip": "172.16.61.101", "mac": "00:50:56:8a:73:65", "reimage": true }'

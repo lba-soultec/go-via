@@ -35,9 +35,9 @@ type Pool struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
-type PoolWithAddresses struct {
+type PoolWithHosts struct {
 	Pool
-	Addresses []Address `json:"address,omitempty" gorm:"foreignkey:PoolID"`
+	Hosts []Host `json:"host,omitempty" gorm:"foreignkey:PoolID"`
 }
 
 func (p *Pool) BeforeCreate(tx *gorm.DB) error {
@@ -70,7 +70,7 @@ func (p *Pool) BeforeSave(tx *gorm.DB) error {
 }
 
 // Next returns the next free address in the pool (that is not reserved nor already leased)
-func (p *PoolWithAddresses) Next() (ip net.IP, err error) {
+func (p *PoolWithHosts) Next() (ip net.IP, err error) {
 	cidrMask := "/" + strconv.Itoa(p.Netmask)
 	startIP, startNet, err := net.ParseCIDR(p.StartAddress + cidrMask)
 	if err != nil {
@@ -103,11 +103,11 @@ func (p *PoolWithAddresses) Next() (ip net.IP, err error) {
 	return nil, fmt.Errorf("could not find a free address")
 }
 
-func (p *PoolWithAddresses) IsAvailable(ip net.IP) error {
+func (p *PoolWithHosts) IsAvailable(ip net.IP) error {
 	return p.IsAvailableExcept(ip, "")
 }
 
-func (p *PoolWithAddresses) Contains(ip net.IP) (bool, error) {
+func (p *PoolWithHosts) Contains(ip net.IP) (bool, error) {
 	cidrMask := "/" + strconv.Itoa(p.Netmask)
 	_, startNet, err := net.ParseCIDR(p.StartAddress + cidrMask)
 	if err != nil {
@@ -117,7 +117,7 @@ func (p *PoolWithAddresses) Contains(ip net.IP) (bool, error) {
 	return startNet.Contains(ip), nil
 }
 
-func (p *PoolWithAddresses) IsAvailableExcept(ip net.IP, exclude string) error {
+func (p *PoolWithHosts) IsAvailableExcept(ip net.IP, exclude string) error {
 	ok, err := p.Contains(ip)
 	if err != nil {
 		return err
@@ -132,14 +132,14 @@ func (p *PoolWithAddresses) IsAvailableExcept(ip net.IP, exclude string) error {
 	}
 
 	// Check all loaded addresses
-	for _, v := range p.Addresses {
+	for _, v := range p.Hosts {
 		if v.IP == s && v.Expires.After(time.Now()) && v.Mac != exclude {
 			return fmt.Errorf("already leased (%d)", v.ID)
 		}
 	}
 
 	// Check reservations as well
-	var reservations []Address
+	var reservations []Host
 	db.DB.Where("ip = ? AND reimage", s).Find(&reservations)
 	for _, v := range reservations {
 		if v.IP == s && v.Mac != exclude {

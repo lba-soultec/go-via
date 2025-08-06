@@ -44,7 +44,7 @@ reboot
 //func Ks(c *gin.Context) {
 func Ks(key string) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var item models.Address
+		var item models.Host
 		host, _, _ := net.SplitHostPort(c.Request.RemoteAddr)
 
 		if res := db.DB.Preload(clause.Associations).Where("ip = ?", host).First(&item); res.Error != nil {

@@ -65,7 +65,7 @@ func main() {
 	}
 
 	//migrate all models
-	err := db.DB.AutoMigrate(&models.Pool{}, &models.Address{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{})
+	err := db.DB.AutoMigrate(&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{})
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -176,14 +176,14 @@ func main() {
 			relay.GET(":relay", api.GetPoolByRelay)
 		}
 
-		addresses := v1.Group("/addresses")
+		hosts := v1.Group("/hosts")
 		{
-			addresses.GET("", api.ListAddresses)
-			addresses.GET(":id", api.GetAddress)
-			addresses.POST("/search", api.SearchAddress)
-			addresses.POST("", api.CreateAddress)
-			addresses.PATCH(":id", api.UpdateAddress)
-			addresses.DELETE(":id", api.DeleteAddress)
+			hosts.GET("", api.ListHosts)
+			hosts.GET(":id", api.GetHost)
+			hosts.POST("/search", api.SearchHost)
+			hosts.POST("", api.CreateHost)
+			hosts.PATCH(":id", api.UpdateHost)
+			hosts.DELETE(":id", api.DeleteHost)
 		}
 
 		options := v1.Group("/options")

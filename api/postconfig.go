@@ -30,7 +30,7 @@ import (
 
 func PostConfig(key string) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var item models.Address
+		var item models.Host
 		host, _, _ := net.SplitHostPort(c.Request.RemoteAddr)
 
 		if res := db.DB.Preload(clause.Associations).Where("ip = ?", host).First(&item); res.Error != nil {
@@ -48,7 +48,7 @@ func PostConfig(key string) func(c *gin.Context) {
 
 func PostConfigID(key string) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var item models.Address
+		var item models.Host
 
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -69,7 +69,7 @@ func PostConfigID(key string) func(c *gin.Context) {
 	}
 }
 
-func ProvisioningWorker(item models.Address, key string) {
+func ProvisioningWorker(item models.Host, key string) {
 
 	//create empty model and load it with the json content from database
 	options := models.GroupOptions{}
@@ -301,7 +301,7 @@ func putRequest(url string, data io.Reader, username string, password string) {
 	}
 }
 
-func callback(url string, data models.Address) error {
+func callback(url string, data models.Host) error {
 	//remove password
 	data.Group.Password = ""
 	//convert model to json
@@ -337,7 +337,7 @@ func callback(url string, data models.Address) error {
 	return nil
 }
 
-func PostConfigSyslog(e *esxcli.Executor, item models.Address) error {
+func PostConfigSyslog(e *esxcli.Executor, item models.Host) error {
 	//configure Syslog and modify firewall to allow syslog.
 	cmd := strings.Fields("system syslog config set --loghost=" + item.Group.Syslog)
 	_, err := e.Run(cmd)
@@ -375,7 +375,7 @@ func PostConfigSyslog(e *esxcli.Executor, item models.Address) error {
 	return nil
 }
 
-func PostConfigNTP(e *esxcli.Executor, item models.Address, host *object.HostSystem, ctx context.Context) error {
+func PostConfigNTP(e *esxcli.Executor, item models.Host, host *object.HostSystem, ctx context.Context) error {
 	cmd := strings.Fields("system ntp set")
 	for _, k := range strings.Split(item.Group.NTP, ",") {
 		cmd = append(cmd, "--server", string(k))
@@ -428,7 +428,7 @@ func PostConfigNTP(e *esxcli.Executor, item models.Address, host *object.HostSys
 	return nil
 }
 
-func PostConfigDomain(e *esxcli.Executor, item models.Address) error {
+func PostConfigDomain(e *esxcli.Executor, item models.Host) error {
 	//add search domains
 	search := strings.Fields("network ip dns search add -d")
 	search = append(search, item.Domain)
@@ -456,7 +456,7 @@ func PostConfigDomain(e *esxcli.Executor, item models.Address) error {
 	return nil
 }
 
-func PostConfigSSH(e *esxcli.Executor, item models.Address, host *object.HostSystem, ctx context.Context) error {
+func PostConfigSSH(e *esxcli.Executor, item models.Host, host *object.HostSystem, ctx context.Context) error {
 	s, err := host.ConfigManager().ServiceSystem(ctx)
 	if err != nil {
 		return err
@@ -505,7 +505,7 @@ func PostConfigSSH(e *esxcli.Executor, item models.Address, host *object.HostSys
 	return nil
 }
 
-func PostConfigVlan(e *esxcli.Executor, item models.Address) error {
+func PostConfigVlan(e *esxcli.Executor, item models.Host) error {
 	//if vlan is set, configure the "VM Network" portgroup with the same vlanid.
 
 	cmd := strings.Fields("network vswitch standard portgroup set --vlan-id " + item.Group.Vlan)
@@ -528,7 +528,7 @@ func PostConfigVlan(e *esxcli.Executor, item models.Address) error {
 	return nil
 }
 
-func PostConfigCertificate(e *esxcli.Executor, item models.Address, decryptedPassword string, ctx context.Context, timeout int, i int, c *govmomi.Client, url *url.URL) error {
+func PostConfigCertificate(e *esxcli.Executor, item models.Host, decryptedPassword string, ctx context.Context, timeout int, i int, c *govmomi.Client, url *url.URL) error {
 	//create directory
 	os.MkdirAll("./cert/"+item.Hostname+"."+item.Domain, os.ModePerm)
 	//create certificate

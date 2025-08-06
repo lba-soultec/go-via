@@ -151,7 +151,7 @@ func CreatePool(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param  id path int true "Pool ID"
-// @Success 200 {object} models.Address
+// @Success 200 {object} models.Host
 // @Failure 400 {object} models.APIError
 // @Failure 404 {object} models.APIError
 // @Failure 500 {object} models.APIError
@@ -164,7 +164,7 @@ func GetNextFreeIP(c *gin.Context) {
 	}
 
 	// Load the item
-	var item models.PoolWithAddresses
+	var item models.PoolWithHosts
 	if res := db.DB.Table("pools").Preload("Addresses", "reimage OR expires > NOW()").First(&item, id); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			Error(c, http.StatusNotFound, fmt.Errorf("not found")) // 404
@@ -180,8 +180,8 @@ func GetNextFreeIP(c *gin.Context) {
 		return
 	}
 
-	resp := models.Address{
-		AddressForm: models.AddressForm{
+	resp := models.Host{
+		HostForm: models.HostForm{
 			IP: ip.String(),
 		},
 	}
@@ -329,7 +329,7 @@ func DeletePool(c *gin.Context) {
 
 }
 
-func FindPool(ip string) (*models.PoolWithAddresses, error) {
+func FindPool(ip string) (*models.PoolWithHosts, error) {
 	var pools []models.Pool
 	if res := db.DB.Table("pools").Find(&pools); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
@@ -337,7 +337,7 @@ func FindPool(ip string) (*models.PoolWithAddresses, error) {
 		}
 		return nil, res.Error
 	}
-	var pool models.PoolWithAddresses
+	var pool models.PoolWithHosts
 	for _, v := range pools {
 		_, ipv4Net, err := net.ParseCIDR(ip + "/" + strconv.Itoa(v.Netmask))
 		if err != nil {
