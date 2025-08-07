@@ -1,11 +1,11 @@
 package api
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"net/netip"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +14,8 @@ import (
 	"github.com/maxiepax/go-via/models"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"github.com/davecgh/go-spew/spew"
+
 )
 
 // ListHosts Get a list of all hosts
@@ -124,37 +126,31 @@ func CreateHost(c *gin.Context) {
 
 	item := models.Host{HostForm: form}
 
-	// get the pool network info to verify if this ip should be added to the pool.
-	var na models.Pool
-	db.DB.First(&na, "id = ?", item.HostForm.PoolID)
 
-	cidr := item.IP + "/" + strconv.Itoa(na.Netmask)
-	network := na.NetAddress + "/" + strconv.Itoa(na.Netmask)
+	// get the pool network info to verify if this ip should be added to the pool.
+	var pool models.Pool
+	db.DB.First(&pool, "id = ?", form.PoolID)
 
 	// first check if the address is even in the network.
-	_, neta, _ := net.ParseCIDR(network)
-	ipb, _, _ := net.ParseCIDR(cidr)
-	start := net.ParseIP(na.StartAddress)
-	end := net.ParseIP(na.EndAddress)
-	if neta.Contains(ipb) {
-		//then check if it's in the given range by the pool.
-		trial := net.ParseIP(item.IP)
+	ip, err := netip.ParseAddr(item.IP)
+	if err != nil {
+        logrus.WithFields(logrus.Fields{
+		"error": err,
+	}).Error("CreateHost")
+    }
 
-		if bytes.Compare(trial, start) >= 0 && bytes.Compare(trial, end) <= 0 {
-			logrus.WithFields(logrus.Fields{
-				"ip":    trial,
-				"start": start,
-				"end":   end,
-			}).Debug("ip validation successful")
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"ip":    trial,
-				"start": start,
-				"end":   end,
-			}).Debug("the ip address is not in the scope of the dhcp pool associated with the group")
-			Error(c, http.StatusBadRequest, fmt.Errorf("the ip address is not in the scope of the dhcp pool associated with the group")) // 400
-			return
-		}
+	network, err := netip.ParsePrefix(pool.NetAddress + "/" + strconv.Itoa(pool.Netmask))
+	if err != nil {
+        logrus.WithFields(logrus.Fields{
+		"error": err,
+	}).Error("CreateHost")
+    }
+
+	if network.Contains(ip) {
+		logrus.WithFields(logrus.Fields{
+				"ip":    ip,
+				"network": network,
+		}).Debug("ip validation successful")
 	} else {
 		Error(c, http.StatusBadRequest, fmt.Errorf("the ip address is not in the scope of the dhcp pool associated with the group")) // 400
 		return
@@ -164,7 +160,7 @@ func CreateHost(c *gin.Context) {
 	mac, _ := net.ParseMAC(item.Mac)
 	item.Mac = mac.String()
 
-	// if ip address checks pas, continue to commit.
+	// if ip address checks pass, continue to commit.
 	if item.ID != 0 { // Save if its an existing item
 		if res := db.DB.Save(&item); res.Error != nil {
 			Error(c, http.StatusInternalServerError, res.Error) // 500

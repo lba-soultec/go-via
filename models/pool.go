@@ -13,9 +13,9 @@ import (
 
 type PoolForm struct {
 	Name             string `json:"name" gorm:"type:varchar(255);not null" binding:"required" `
-	StartAddress     string `json:"start_address" gorm:"type:varchar(15);not null" binding:"required" `
-	EndAddress       string `json:"end_address" gorm:"type:varchar(15);not null" binding:"required" `
 	Netmask          int    `json:"netmask" gorm:"type:integer;not null" binding:"required" `
+	NetAddress string `json:"net_address" gorm:"type:varchar(15);not null"`
+
 	LeaseTime        int    `json:"lease_time" gorm:"type:bigint" binding:"required" `
 	Gateway          string `json:"gateway" gorm:"type:varchar(15)" binding:"required" `
 	OnlyServeReimage bool   `json:"only_serve_reimage" gorm:"type:boolean"`
@@ -27,7 +27,6 @@ type PoolForm struct {
 type Pool struct {
 	ID int `json:"id" gorm:"primary_key"`
 
-	NetAddress string `json:"net_address" gorm:"type:varchar(15);not null"`
 	PoolForm
 
 	CreatedAt time.Time  `json:"created_at"`
@@ -49,6 +48,7 @@ func (p *Pool) BeforeSave(tx *gorm.DB) error {
 		return fmt.Errorf("invalid netmask")
 	}
 
+	/*
 	cidrMask := "/" + strconv.Itoa(p.Netmask)
 	_, startNet, err := net.ParseCIDR(p.StartAddress + cidrMask)
 	if err != nil {
@@ -65,11 +65,13 @@ func (p *Pool) BeforeSave(tx *gorm.DB) error {
 	}
 
 	p.NetAddress = startNet.IP.String()
+	*/
 
 	return nil
 }
 
 // Next returns the next free address in the pool (that is not reserved nor already leased)
+/*
 func (p *PoolWithHosts) Next() (ip net.IP, err error) {
 	cidrMask := "/" + strconv.Itoa(p.Netmask)
 	startIP, startNet, err := net.ParseCIDR(p.StartAddress + cidrMask)
@@ -102,6 +104,7 @@ func (p *PoolWithHosts) Next() (ip net.IP, err error) {
 
 	return nil, fmt.Errorf("could not find a free address")
 }
+*/
 
 func (p *PoolWithHosts) IsAvailable(ip net.IP) error {
 	return p.IsAvailableExcept(ip, "")
@@ -109,7 +112,7 @@ func (p *PoolWithHosts) IsAvailable(ip net.IP) error {
 
 func (p *PoolWithHosts) Contains(ip net.IP) (bool, error) {
 	cidrMask := "/" + strconv.Itoa(p.Netmask)
-	_, startNet, err := net.ParseCIDR(p.StartAddress + cidrMask)
+	_, startNet, err := net.ParseCIDR(p.NetAddress + cidrMask)
 	if err != nil {
 		return false, err
 	}
@@ -153,7 +156,7 @@ func (p *PoolWithHosts) IsAvailableExcept(ip net.IP, exclude string) error {
 // Credit to Mikio Hara and pnovotnak https://stackoverflow.com/questions/36166791/how-to-get-broadcast-address-of-ipv4-net-ipnet
 func (p *Pool) LastAddr() (net.IP, error) {
 	cidrMask := "/" + strconv.Itoa(p.Netmask)
-	_, startNet, err := net.ParseCIDR(p.StartAddress + cidrMask)
+	_, startNet, err := net.ParseCIDR(p.NetAddress + cidrMask)
 	if err != nil {
 		return net.IP{}, err
 	}

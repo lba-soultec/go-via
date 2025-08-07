@@ -88,12 +88,14 @@ func processDiscover(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (resp *lay
 		return nil, fmt.Errorf("ignored because mac address is not flagged for re-imaging")
 	}
 
+	/*
 	if leaseIP == nil {
 		leaseIP, err = pool.Next()
 		if err != nil {
 			return nil, err
 		}
 	}
+	*/
 
 	resp = &layers.DHCPv4{
 		Operation:    layers.DHCPOpReply,

@@ -168,9 +168,8 @@ func main() {
 			pools.POST("", api.CreatePool)
 			pools.PATCH(":id", api.UpdatePool)
 			pools.DELETE(":id", api.DeletePool)
-
-			pools.GET(":id/next", api.GetNextFreeIP)
 		}
+
 		relay := v1.Group("/relay")
 		{
 			relay.GET(":relay", api.GetPoolByRelay)
