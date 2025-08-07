@@ -19,9 +19,6 @@ type PoolForm struct {
 	LeaseTime        int    `json:"lease_time" gorm:"type:bigint" binding:"required" `
 	Gateway          string `json:"gateway" gorm:"type:varchar(15)" binding:"required" `
 	OnlyServeReimage bool   `json:"only_serve_reimage" gorm:"type:boolean"`
-
-	AuthorizedVlan int    `json:"authorized_vlan" gorm:"type:bigint"`
-	ManagedRef     string `json:"managed_reference"`
 }
 
 type Pool struct {

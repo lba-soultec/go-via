@@ -14,8 +14,6 @@ import (
 	"github.com/maxiepax/go-via/models"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"github.com/davecgh/go-spew/spew"
-
 )
 
 // ListHosts Get a list of all hosts
