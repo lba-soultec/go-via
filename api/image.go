@@ -100,7 +100,7 @@ func CreateImage(c *gin.Context) {
 
 		item := models.Image{}
 		item.ISOImage = filepath.Base(file.Filename)
-		item.Path = path.Join(".", "tftp", filename)
+		item.Path = path.Join(".", "images", filename)
 		item.Hash = c.PostForm("hash")
 		item.Description = c.PostForm("description")
 
@@ -150,7 +150,7 @@ func CreateImage(c *gin.Context) {
 		//strip the filextension, eg. vmware.iso = vmware
 		fn := strings.TrimSuffix(file.Filename, filepath.Ext(file.Filename))
 		//merge into filepath
-		fp := path.Join(".", "tftp", fn)
+		fp := path.Join(".", "images", fn)
 
 		if err = util.ExtractImageToDirectory(f, fp); err != nil {
 			log.Fatalf("failed to extract image: %s", err)

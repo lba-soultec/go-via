@@ -14,9 +14,9 @@ import (
 type PoolForm struct {
 	Name             string `json:"name" gorm:"type:varchar(255);not null" binding:"required" `
 	Netmask          int    `json:"netmask" gorm:"type:integer;not null" binding:"required" `
-	NetAddress string `json:"net_address" gorm:"type:varchar(15);not null"`
+	NetAddress 		 string `json:"net_address" gorm:"type:varchar(15);not null"`
 
-	LeaseTime        int    `json:"lease_time" gorm:"type:bigint" binding:"required" `
+	LeaseTime        int    `json:"lease_time" gorm:"type:bigint" `
 	Gateway          string `json:"gateway" gorm:"type:varchar(15)" binding:"required" `
 	OnlyServeReimage bool   `json:"only_serve_reimage" gorm:"type:boolean"`
 }

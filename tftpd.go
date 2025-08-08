@@ -94,16 +94,16 @@ func readHandler(conf *config.Config) func(string, io.ReaderFrom) error {
 		case "/boot.cfg":
 			serveBootCfg(filename, host, image, rf, conf)
 		default:
-			//if no case matches, chroot to /tftp
-			if _, err := os.Stat("tftp/" + filename); err == nil {
-				filename = "tftp/" + filename
+			//if no case matches, chroot to /images
+			if _, err := os.Stat("images/" + filename); err == nil {
+				filename = "images/" + filename
 				logrus.WithFields(logrus.Fields{
 					"lowercase file": filename,
 				}).Debug("tftpd")
 			} else {
 				dir, file := path.Split(filename)
 				upperfile := strings.ToUpper(string(file))
-				filename = "tftp/" + dir + upperfile
+				filename = "images/" + dir + upperfile
 				logrus.WithFields(logrus.Fields{
 					"uppercase file": filename,
 				}).Debug("tftpd")
