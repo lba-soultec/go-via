@@ -32,7 +32,7 @@ rootpw {{ .password }}
 clearpart --overwritevmfs --alldrives {{ end }}
 
 {{ if .bootdisk }}
-install --disk=/vmfs/devices/disks/{{.bootdisk}} --overwritevmfs --novmfsondisk --forceunsupportedinstall
+install --disk=/vmfs/devices/disks/{{.bootdisk}} --overwritevmfs --novmfsondisk {{ if not .legacycpu }} --forceunsupportedinstall {{ end }}
 {{ else }}
 # Install on the first local disk available on machine
 install --overwritevmfs {{ if not .createvmfs }} --novmfsondisk {{ end }} --firstdisk="localesx,usb,ahci,vmw_ahci,VMware" --forceunsupportedinstall
@@ -142,6 +142,7 @@ func Ks(key string) func(c *gin.Context) {
 			"bootdisk":   item.Group.BootDisk,
 			"vlan":       item.Group.Vlan,
 			"createvmfs": options.CreateVMFS,
+			"legacycpu":  options.AllowLegacyCPU,
 		}
 
 		ks := defaultks
