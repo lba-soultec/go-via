@@ -16,7 +16,7 @@ import (
 	"github.com/maxiepax/go-via/secrets"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm/clause"
-	"github.com/davecgh/go-spew/spew"
+	//"github.com/davecgh/go-spew/spew"
 
 )
 
@@ -32,10 +32,10 @@ rootpw {{ .password }}
 clearpart --overwritevmfs --alldrives {{ end }}
 
 {{ if .bootdisk }}
-install --disk=/vmfs/devices/disks/{{.bootdisk}} --overwritevmfs --novmfsondisk
+install --disk=/vmfs/devices/disks/{{.bootdisk}} --overwritevmfs --novmfsondisk --forceunsupportedinstall
 {{ else }}
 # Install on the first local disk available on machine
-install --overwritevmfs {{ if not .createvmfs }} --novmfsondisk {{ end }} --firstdisk="localesx,usb,ahci,vmw_ahci,VMware"
+install --overwritevmfs {{ if not .createvmfs }} --novmfsondisk {{ end }} --firstdisk="localesx,usb,ahci,vmw_ahci,VMware" --forceunsupportedinstall
 {{ end }}
 
 # Set the network to static on the first network adapter
@@ -172,7 +172,8 @@ func Ks(key string) func(c *gin.Context) {
 			return
 		}
 
-		spew.Dump(t.Execute(os.Stdout, data))
+		//debug ks.cfg output
+		//spew.Dump(t.Execute(os.Stdout, data))
 
 		logrus.Info("Served ks.cfg file")
 		logrus.WithFields(logrus.Fields{
