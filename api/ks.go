@@ -6,7 +6,8 @@ import (
 	"net"
 	"net/http"
 	"text/template"
-
+	"strings"
+	"os"
 	"encoding/base64"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,8 @@ import (
 	"github.com/maxiepax/go-via/secrets"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm/clause"
+	"github.com/davecgh/go-spew/spew"
+
 )
 
 var defaultks = `
@@ -36,12 +39,50 @@ install --overwritevmfs {{ if not .createvmfs }} --novmfsondisk {{ end }} --firs
 {{ end }}
 
 # Set the network to static on the first network adapter
-network --bootproto=static --ip={{ .ip }} --gateway={{ .gateway }} --netmask={{ .netmask }} --nameserver={{ .dns }} --hostname={{ .hostname }} --device={{ .mac }} {{if .vlan}} --vlanid={{.vlan}} {{end}}
+network --bootproto=static --ip={{ .ip }} --gateway={{ .gateway }} --netmask={{ .netmask }} {{if .dns}}--nameserver={{ .dns }} {{end}} --hostname={{ .hostname }} --device={{ .mac }} {{if .vlan}} --vlanid={{.vlan}} {{end}}
 
 reboot
+
+%firstboot --interpreter=busybox
+
+# Configure NTP
+{{ if .ntp }}
+esxcli system ntp set -e true -s {{ .ntp }}
+{{ end }}
+
+# Configure Domain Search
+{{ if .domain }}
+esxcli network ip dns search add -d {{ .domain }}
+{{ end }}
+
+# Configure FQDN
+esxcli system hostname set --fqdn {{ .fqdn }}
+
+# Enable SSH
+{{ if .ssh }}
+vim-cmd hostsvc/enable_ssh
+vim-cmd hostsvc/start_ssh
+system settings advanced set -o /UserVars/SuppressShellWarning -i 1
+{{ end }}
+
+# Syslog
+{{ if .syslog }}
+esxcli system syslog config set --loghost={{ .syslog }}
+esxcli system syslog reload
+esxcli network firewall ruleset set --ruleset-id=syslog --enabled=true
+esxcli network firewall refresh
+{{ end }}
+
+#vSwitch0
+{{ if .vlan }}
+esxcli network vswitch standard portgroup set --vlan-id {{.vlan}}
+{{ end }}
+
+# Ensure TLS certificate matches ESXi FQDN
+/sbin/generate-certificates
+/etc/init.d/hostd restart && /etc/init.d/vpxa restart && /etc/init.d/rhttpproxy restart
 `
 
-//func Ks(c *gin.Context) {
 func Ks(key string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var item models.Host
@@ -76,6 +117,12 @@ func Ks(key string) func(c *gin.Context) {
 		//decrypt the password
 		decryptedPassword := secrets.Decrypt(item.Group.Password, key)
 
+		//split NTP
+		ntp := strings.Fields("esxcli system ntp set")
+		for _, k := range strings.Split(item.Group.NTP, ",") {
+			ntp = append(ntp, "--server", string(k))
+		}
+
 		//cleanup data to allow easier custom templating
 		data := map[string]interface{}{
 			"password":   decryptedPassword,
@@ -83,10 +130,15 @@ func Ks(key string) func(c *gin.Context) {
 			"mac":        item.Mac,
 			"gateway":    item.Pool.Gateway,
 			"dns":        item.Group.DNS,
+			"ntp":		  ntp,
 			"hostname":   item.Hostname,
+			"domain":	  item.Domain,
+			"fqdn":		  item.Hostname+"."+item.Domain,
 			"netmask":    netmask,
 			"via_server": laddrport,
 			"erasedisks": options.EraseDisks,
+			"ssh":		  options.SSH,
+			"syslog":	  item.Group.Syslog,
 			"bootdisk":   item.Group.BootDisk,
 			"vlan":       item.Group.Vlan,
 			"createvmfs": options.CreateVMFS,
@@ -119,6 +171,8 @@ func Ks(key string) func(c *gin.Context) {
 			logrus.Info(err)
 			return
 		}
+
+		spew.Dump(t.Execute(os.Stdout, data))
 
 		logrus.Info("Served ks.cfg file")
 		logrus.WithFields(logrus.Fields{

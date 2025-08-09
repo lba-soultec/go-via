@@ -11,6 +11,9 @@ type GroupForm struct {
 	Name        string         `json:"name" gorm:"type:varchar(255)"`
 	DNS         string         `json:"dns" gorm:"type:varchar(255)"`
 	NTP         string         `json:"ntp" gorm:"type:varchar(255)"`
+	Netmask		string         `json:"netmask" gorm:"type:varchar(255)"`
+	Gateway		string         `json:"gateway" gorm:"type:varchar(255)"`
+	Device		string         `json:"device" gorm:"type:varchar(255)"`
 	Password    string         `json:"password" gorm:"type:varchar(255)"`
 	ImageID     int            `json:"image_id" gorm:"type:INT"`
 	Ks          string         `json:"ks" gorm:"type:text"`
@@ -26,6 +29,9 @@ type NoPWGroupForm struct {
 	Name        string         `json:"name" gorm:"type:varchar(255)"`
 	DNS         string         `json:"dns" gorm:"type:varchar(255)"`
 	NTP         string         `json:"ntp" gorm:"type:varchar(255)"`
+	Netmask		string         `json:"netmask" gorm:"type:varchar(255)"`
+	Gateway		string         `json:"gateway" gorm:"type:varchar(255)"`
+	Device		string         `json:"device" gorm:"type:varchar(255)"`
 	ImageID     int            `json:"image_id" gorm:"type:INT"`
 	Ks          string         `json:"ks" gorm:"type:text"`
 	Syslog      string         `json:"syslog" gorm:"type:varchar(255)"`
