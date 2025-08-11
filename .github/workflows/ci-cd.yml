@@ -174,6 +174,12 @@ jobs:
       - name: Install swag
         run: go install github.com/swaggo/swag/cmd/swag@latest
       
+      - name: Download Go dependencies
+        run: go mod download
+      
+      - name: Verify Go dependencies
+        run: go mod verify
+      
       - name: build npm module
         run: |
           cd web
@@ -184,6 +190,9 @@ jobs:
         run: |
           rm -rf statik
           statik -src ./web/dist/web -f
+      
+      - name: Build Go project
+        run: go build ./...
       
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
