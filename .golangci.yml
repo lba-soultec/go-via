@@ -1,0 +1,13 @@
+run:
+  timeout: 5m
+
+linters:
+  disable:
+    - goanalysis_metalinter
+    - unused
+    - staticcheck
+  enable:
+    - gofmt
+    - govet
+    - ineffassign
+    - misspell
