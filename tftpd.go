@@ -46,7 +46,7 @@ func readHandler(conf *config.Config) func(string, io.ReaderFrom) error {
 
 		// get the requesting ip-address and our source address
 		raddr := rf.(tftp.OutgoingTransfer).RemoteAddr()
-		laddr := rf.(tftp.IncomingTransfer).RemoteAddr()
+		laddr := rf.(tftp.RequestPacketInfo).LocalIP()
 
 		//strip the port
 		ip, _, _ := net.SplitHostPort(raddr.String())
@@ -199,7 +199,7 @@ func serveBootCfg(filename string, address models.Address, image models.Image, r
 	// TODO: check after updating
 	// old:
 	//	laddr := rf.(tftp.RequestPacketInfo).LocalIP()
-	laddr := rf.(tftp.IncomingTransfer).RemoteAddr().IP
+	laddr := rf.(tftp.RequestPacketInfo).LocalIP()
 
 	//strip the port
 	ip, _, _ := net.SplitHostPort(raddr.String())
