@@ -183,9 +183,11 @@ jobs:
       - name: Generate statik files
         run: |
           rm -rf statik
-          go generate
+          statik -src ./web/dist/web -f
       
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.3.1
+          install-mode: goinstall
+
