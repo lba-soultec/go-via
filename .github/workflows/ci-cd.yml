@@ -1,6 +1,7 @@
 name: CI/CD Pipeline
 
 on:
+  create:
   push:
     branches: [ main , 'releases/**']
     tags: [ 'v*' ]
