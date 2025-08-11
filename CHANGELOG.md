@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/lba-soultec/go-via/compare/v1.0.2...v1.0.3) (2025-08-11)
+
+
+### Bug Fixes
+
+* update conditions for build-go-cli, release, and deploy-staging jobs ([f94368f](https://github.com/lba-soultec/go-via/commit/f94368fb1119815c99fafb2aa91f01f32b7eee1a))
+
 ## [1.0.2](https://github.com/lba-soultec/go-via/compare/v1.0.1...v1.0.2) (2025-08-11)
 
 
