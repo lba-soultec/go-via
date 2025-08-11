@@ -1,0 +1,20 @@
+namespace: souldeploy
+resources:
+  - pvc.yaml
+  - k8s-deployment.yaml
+  - svc.yaml
+  - ns.yaml
+
+
+images:
+  - name: registry.soultec.lab/souldeploy/souldeploy
+    newTag: ${VERSION}
+
+configMapGenerator:
+  - name: souldeploy-config
+    files:
+      - app-config.yaml    
+      
+generatorOptions:
+      disableNameSuffixHash: true
+       

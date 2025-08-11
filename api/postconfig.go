@@ -15,16 +15,16 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	ca "github.com/maxiepax/go-via/crypto"
-	"github.com/maxiepax/go-via/db"
-	"github.com/maxiepax/go-via/models"
-	"github.com/maxiepax/go-via/secrets"
 	"github.com/sirupsen/logrus"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/govc/host/esxcli"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/types"
+	ca "gitlab.soultec.ch/soultec/souldeploy/crypto"
+	"gitlab.soultec.ch/soultec/souldeploy/db"
+	"gitlab.soultec.ch/soultec/souldeploy/models"
+	"gitlab.soultec.ch/soultec/souldeploy/secrets"
 	"gorm.io/gorm/clause"
 )
 

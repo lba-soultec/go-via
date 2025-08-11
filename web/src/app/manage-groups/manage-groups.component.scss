@@ -30,3 +30,16 @@
 #host_ks {
     padding-top: 10px;
 }
+
+
+clr-datagrid {
+    max-height: 100%; // Allow the datagrid to grow dynamically
+    overflow: visible; // Ensure dropdowns are not clipped
+    position: relative; 
+}
+
+clr-dg-row {
+    min-height: 50px; // Set a minimum height for rows
+    align-items: center; // Center-align content in rows
+}
+

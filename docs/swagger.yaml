@@ -23,10 +23,24 @@ definitions:
         $ref: '#/definitions/models.Group'
       group_id:
         type: integer
+      host_fqdn:
+        type: string
       hostname:
         type: string
       id:
         type: integer
+      ilo_api_flavour:
+        type: string
+      ilo_fqdn:
+        type: string
+      ilo_ip:
+        type: string
+      ilo_password:
+        type: string
+      ilo_port:
+        type: string
+      ilo_user:
+        type: string
       ip:
         type: string
       ks:
@@ -53,13 +67,27 @@ definitions:
       updated_at:
         type: string
     type: object
-  models.AddressForm:
+  models.DeviceAddressForm:
     properties:
       domain:
         type: string
       group_id:
         type: integer
+      host_fqdn:
+        type: string
       hostname:
+        type: string
+      ilo_api_flavour:
+        type: string
+      ilo_fqdn:
+        type: string
+      ilo_ip:
+        type: string
+      ilo_password:
+        type: string
+      ilo_port:
+        type: string
+      ilo_user:
         type: string
       ip:
         type: string
@@ -389,7 +417,7 @@ paths:
         name: item
         required: true
         schema:
-          $ref: '#/definitions/models.AddressForm'
+          $ref: '#/definitions/models.DeviceAddressForm'
       produces:
       - application/json
       responses:
@@ -479,7 +507,7 @@ paths:
         name: item
         required: true
         schema:
-          $ref: '#/definitions/models.AddressForm'
+          $ref: '#/definitions/models.DeviceAddressForm'
       produces:
       - application/json
       responses:

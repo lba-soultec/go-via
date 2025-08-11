@@ -1,6 +1,6 @@
-import { Component, OnInit, ɵɵtrustConstantResourceUrl } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, ɵɵtrustConstantResourceUrl } from '@angular/core';
 import { ApiService } from '../api.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { cloudIcon, ClarityIcons, atomIconName } from '@cds/core/icon';
 import '@cds/core/icon/register.js';
@@ -21,40 +21,66 @@ import '@cds/core/textarea/register.js';
 import '@cds/core/time/register.js';
 import '@cds/core/toggle/register.js';
 import { id } from '@cds/core/internal';
+import { GroupManagerComponent } from '../components/group-manager/group-manager.component';
 
 
 @Component({
-  selector: 'app-manage-groups',
-  templateUrl: './manage-groups.component.html',
-  styleUrls: ['./manage-groups.component.scss']
+    selector: 'app-manage-groups',
+    templateUrl: './manage-groups.component.html',
+    styleUrls: ['./manage-groups.component.scss'],
+    standalone: false
 })
 export class ManageGroupsComponent implements OnInit {
-  hosts;
+  hosts: any[] = [];
   host;
-  images;
-  errors;
-  groups;
+  groups: any[] = [];
+  pools: any[] = [];
+  images: any[] = [];
+  errors: any;
+
+  loadingFlag: boolean = false;
+
   group;
-  pools;
+
   advanced;
-  Hostform: FormGroup;
-  Groupform: FormGroup;
+  Hostform: UntypedFormGroup;
+  Groupform: UntypedFormGroup;
   groupid = null;
   poolid = null;
   showGroupModalMode = "";
   showHostModalMode = "";
+  
+  showVlanModalMode = "";
+  vlan_id = null;
+
+  HostVlanform: UntypedFormGroup;
+
   addHostFormModal = false;
   progress = {};
   progresstext = {};
 
-  constructor(private apiService: ApiService, private HostformBuilder: FormBuilder, private GroupformBuilder: FormBuilder) {
+  visibleDatagrids: { [key: string]: boolean } = {};
+
+  selectedGroup: any = {}; 
+
+   @ViewChild(GroupManagerComponent) groupManager?: GroupManagerComponent;
+
+  constructor(private apiService: ApiService, private HostformBuilder: UntypedFormBuilder, private GroupformBuilder: UntypedFormBuilder, private HostVlanformBuilder: UntypedFormBuilder) {
     this.Hostform = this.HostformBuilder.group({
       fqdn: ['', [Validators.required]],
       ip: ['', [Validators.required]],
+      ilo_fqdn: [''],
+      ilo_ip: [''],
       mac: ['', [Validators.required]],
       group_id: ['', [Validators.required]],
       ks: [''],
     });
+    this.HostVlanform = this.HostVlanformBuilder.group({
+      vlanID: ['', [Validators.required]],
+      host_id: [''],
+    });
+
+    
     this.Groupform = this.GroupformBuilder.group({
       name: ['', [Validators.required]],
       dns: [''],
@@ -84,7 +110,8 @@ export class ManageGroupsComponent implements OnInit {
         this.apiService.getGroups().subscribe((groups: any) => {
           this.apiService.getHosts().subscribe((hosts: any) => {
             this.groups = groups.map(item => {
-              item.hosts = hosts.filter(host => host.group_id === item.id)
+              item.ks = atob(item.ks)
+              item.hosts = hosts.filter(host => host.group_id === item.id) || []; // Ensure hosts array is initialized
               return item
             });
             hosts.forEach(host => {
@@ -98,9 +125,11 @@ export class ManageGroupsComponent implements OnInit {
     })
   }
 
+
   ngOnInit(): void {
     this.apiService.getGroups().subscribe((groups: any) => {
       this.apiService.getHosts().subscribe((hosts: any) => {
+        console.log(groups, hosts)
         this.groups = groups.map(item => {
           item.ks = atob(item.ks)
           item.hosts = hosts.filter(host => host.group_id === item.id)
@@ -120,56 +149,18 @@ export class ManageGroupsComponent implements OnInit {
     });
   }
 
-  submitGroup() {
-    const data = {
-      ...this.Groupform.value,
-      image_id: parseInt(this.Groupform.value.image_id),
-      pool_id: parseInt(this.Groupform.value.pool_id),
-    }
 
-    let json_pc: any = {}
-    if (data.ssh) {
-      json_pc.ssh = true;
-    }
-    if (data.erasedisks) {
-      json_pc.erasedisks = true;
-    }
-    if (data.allowlegacycpu) {
-      json_pc.allowlegacycpu = data.allowlegacycpu;
-    }
-    if (data.certificate) {
-      json_pc.certificate = data.certificate;
-    }
-    if (data.createvmfs) {
-      json_pc.createvmfs = data.createvmfs;
-    }
-    if (data.ks) {
-      data.ks = btoa(data.ks)
-    }
 
-    data.options = json_pc;
-    delete data.ssh;
-    delete data.erasedisks;
-    delete data.allowlegacycpu;
-    delete data.certificate;
-    delete data.createvmfs;
+  expandedGroupId: number | null = null;
 
-    this.apiService.addGroup(data).subscribe((data: any) => {
-      if (data.id) {
-        this.groups.push(data);
-        this.Groupform.reset();
-        this.showGroupModalMode = '';
-        this.errors = null;
-      }
-    }, (data: any) => {
-      if (data.status) {
-        this.errors = data.error;
-      } else {
-        this.errors = [data.message];
-      }
-
-    });
+  toggleDatagrid(groupId: number) {
+    this.expandedGroupId = this.expandedGroupId === groupId ? null : groupId;
   }
+
+  isDatagridVisible(groupId: number): boolean {
+    return this.expandedGroupId === groupId;
+  }
+  
 
   removeGroup(id) {
     //check to see if group is empty
@@ -218,6 +209,10 @@ export class ManageGroupsComponent implements OnInit {
       this.Hostform.reset();
     }
   }
+
+
+
+
 
   updateGroup() {
     const data = {
@@ -324,6 +319,91 @@ export class ManageGroupsComponent implements OnInit {
     this.poolid = pool_id;
   }
 
+  @ViewChild('fileInput') fileInput!: ElementRef;
+
+  triggerFileInput() {
+    this.fileInput.nativeElement.click();
+  }
+    
+  importHostsFromCSVToGroup(group_id, pool_id) {
+      const target = event.target as HTMLInputElement;
+    
+      if (target.files && target.files.length > 0) {
+        const file = target.files[0];
+        console.log('Selected file:', file.name);
+    
+        // Call readCSVFile and handle the Promise
+        this.readCSVFile(file).then((parsedData) => {
+          console.log('Parsed Host Data:', parsedData);
+          
+          parsedData.forEach((host) => {
+            const hostData = {
+              fqdn: host.fqdn,
+              ip: host.ip,   // Add other properties you need
+              mac: host.mac, // If required
+              hostname: host.fqdn.split(".")[0],
+              domain: host.fqdn.split(".").slice(1).join('.'),
+              group_id: parseInt(group_id),
+              pool_id: parseInt(pool_id),
+            };
+    
+            // Call addHost directly with the necessary data
+            this.addHost(hostData); // Passing the data directly, not the form group           
+          });
+        }).catch((error) => {
+          console.error('Error:', error);
+          // Handle error, such as showing a notification to the user
+        });
+      }
+    }
+  readCSVFile(file: File): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const csvContent = e.target?.result as string;
+        
+        try {
+          const parsedData = this.parseCSV(csvContent);
+          resolve(parsedData); // Resolve with parsed data
+        } catch (error) {
+          reject('Error parsing CSV: ' + error); // Reject if there's an error parsing
+        }
+      };
+
+      reader.onerror = (error) => {
+        reject('Error reading file: ' + error); // Reject if there's an error reading the file
+      };
+
+      reader.readAsText(file);
+    });
+  }
+    // Parses CSV string into an array of objects matching the form structure
+    parseCSV(csv: string): any[] {
+      const lines = csv.split('\n').map(line => line.trim()).filter(line => line);
+      const headers = lines[0].split(',').map(h => h.trim()); // Extract headers
+      
+      const data: any[] = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values.length === headers.length) {
+          const formGroup = {};
+
+          // Dynamically map values to the formGroup based on the header fields
+          headers.forEach((header, index) => {
+            let value = values[index] || ''; // Default to empty string if no value
+            formGroup[header] = value;
+          
+          });
+
+          // Push the formGroup into the data array
+          data.push(formGroup);
+        }
+      }
+      return data;
+    }
+
 
   submitHost() {
 
@@ -334,11 +414,14 @@ export class ManageGroupsComponent implements OnInit {
       group_id: parseInt(this.groupid),
       pool_id: parseInt(this.poolid),
     }
+    this.addHost(data)
 
+  }
+
+  addHost(data){
     if (data.ks) {
       data.ks = btoa(data.ks)
     }
-
     this.apiService.addHost(data).subscribe((data: any) => {
 
       if (data.id) {
@@ -354,6 +437,8 @@ export class ManageGroupsComponent implements OnInit {
       } else {
         this.errors = [data.message];
       }
+
+      console.log(this.errors)
     });
   }
 
@@ -392,5 +477,170 @@ export class ManageGroupsComponent implements OnInit {
       error => {
         console.log("Error", error);
       });
+  }
+
+  restartHost(hostId: string) {
+    var payload
+    this.apiService.getHost(parseInt(hostId, 10)).subscribe((host: any) => {
+      const id = host.id;
+      var password = host.password;
+      console.log(host)  
+      payload = {
+        iloIpAddr: host.ilo_ip,
+        apiFlavour: host.ilo_api_flavour,
+        port: host.ilo_port,
+        username: host.ilo_user,
+        password: host.ilo_password,
+        vlanID: 123,
+      };
+
+      this.apiService.restartHost(parseInt(hostId, 10), payload).subscribe((host: any) => {
+  
+      }, (response: any) => {
+        if (response.status) {
+          this.errors = response.error;
+        } else {
+          this.errors = [response.message];
+        }
+        this.loadingFlag = false; // Stop loading
+      });
+
+    
+
+    });
+  }
+
+  shutdownHost(hostId: string) {
+    var payload
+    this.apiService.getHost(parseInt(hostId, 10)).subscribe((host: any) => {
+      const id = host.id;
+      var password = host.password;
+      console.log(host)  
+      payload = {
+        iloIpAddr: host.ilo_ip,
+        apiFlavour: host.ilo_api_flavour,
+        port: host.ilo_port,
+        username: host.ilo_user,
+        password: host.ilo_password,
+        vlanID: 123,
+      };
+
+      this.apiService.shutdownHost(parseInt(hostId, 10), payload).subscribe((host: any) => {
+  
+      }, (response: any) => {
+        if (response.status) {
+          this.errors = response.error;
+        } else {
+          this.errors = [response.message];
+        }
+        this.loadingFlag = false; // Stop loading
+      });
+
+    
+
+    });
+  }
+
+  startHost(hostId: string) {
+    var payload
+    this.apiService.getHost(parseInt(hostId, 10)).subscribe((host: any) => {
+      const id = host.id;
+      var password = host.password;
+      console.log(host)  
+      payload = {
+        iloIpAddr: host.ilo_ip,
+        apiFlavour: host.ilo_api_flavour,
+        port: host.ilo_port,
+        username: host.ilo_user,
+        password: host.ilo_password,
+        vlanID: 123,
+      };
+
+      this.apiService.startHost(parseInt(hostId, 10), payload).subscribe((host: any) => {
+  
+      }, (response: any) => {
+        if (response.status) {
+          this.errors = response.error;
+        } else {
+          this.errors = [response.message];
+        }
+        this.loadingFlag = false; // Stop loading
+      });
+
+    
+
+    });
+
+  }
+
+
+
+  
+
+  showVlanModal(hostId: string): void {
+    console.log("HODOR!")
+    console.log(hostId)
+    this.HostVlanform.setValue({ 'host_id': hostId , 'vlanID': ''});
+    this.showVlanModalMode = 'open'; // Open the modal
+  }
+
+  closeVlanModal(): void {
+    this.showVlanModalMode = ''; // Close the modal
+  }
+  submitHostVlan(){
+    this.loadingFlag = true; // Start loading
+    this.apiService.getHost(parseInt(this.HostVlanform.get('host_id')?.value, 10)).subscribe((host: any) => {
+      const id = host.id;
+      var password = host.password;
+      console.log(host)  
+      const payload = {
+        iloIpAddr: host.ilo_ip,
+        apiFlavour: host.ilo_api_flavour,
+        port: host.ilo_port,
+        username: host.ilo_user,
+        password: host.ilo_password,
+        vlanID: this.HostVlanform.get('vlanID')?.value,
+      };
+      this.apiService.addHostVlan(id, payload).subscribe((response: any) => {
+        this.groups = this.groups.map(group => {
+          group.hosts = group.hosts.map(host => host.id === id ? response : host)
+          return group;
+        })
+        this.showVlanModalMode = '';
+        this.loadingFlag = false; // Stop loading
+      }
+      , (response: any) => {
+        if (response.status) {
+          this.errors = response.error;
+        } else {
+          this.errors = [response.message];
+        }
+        this.loadingFlag = false; // Stop loading
+      }
+      );
+    });
+  }
+
+  onGroupSubmit(event: any) {
+    if (this.showGroupModalMode === 'add') {
+      this.groupManager.submitGroup().subscribe((data: any) => {
+      if (data.id) {
+        this.groups.push(data);
+        this.Groupform.reset();
+        this.showGroupModalMode = '';
+        this.errors = null;
+      }
+    }, (data: any) => {
+      if (data.status) {
+        this.errors = data.error;
+      } else {
+        this.errors = [data.message];
+      }
+
+    });
+  
+    } else {
+      this.updateGroup();
+    }
   }
 }

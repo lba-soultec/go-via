@@ -27,10 +27,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/maxiepax/go-via/config"
-	"github.com/maxiepax/go-via/db"
-	"github.com/maxiepax/go-via/models"
 	"github.com/sirupsen/logrus"
+	"gitlab.soultec.ch/soultec/souldeploy/config"
+	"gitlab.soultec.ch/soultec/souldeploy/db"
+	"gitlab.soultec.ch/soultec/souldeploy/models"
 	"gorm.io/gorm/clause"
 
 	"github.com/pin/tftp"

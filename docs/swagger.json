@@ -56,7 +56,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddressForm"
+                            "$ref": "#/definitions/models.DeviceAddressForm"
                         }
                     }
                 ],
@@ -244,7 +244,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddressForm"
+                            "$ref": "#/definitions/models.DeviceAddressForm"
                         }
                     }
                 ],
@@ -1917,11 +1917,32 @@
                 "group_id": {
                     "type": "integer"
                 },
+                "host_fqdn": {
+                    "type": "string"
+                },
                 "hostname": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
+                },
+                "ilo_api_flavour": {
+                    "type": "string"
+                },
+                "ilo_fqdn": {
+                    "type": "string"
+                },
+                "ilo_ip": {
+                    "type": "string"
+                },
+                "ilo_password": {
+                    "type": "string"
+                },
+                "ilo_port": {
+                    "type": "string"
+                },
+                "ilo_user": {
+                    "type": "string"
                 },
                 "ip": {
                     "type": "string"
@@ -1962,7 +1983,7 @@
                 }
             }
         },
-        "models.AddressForm": {
+        "models.DeviceAddressForm": {
             "type": "object",
             "properties": {
                 "domain": {
@@ -1971,7 +1992,28 @@
                 "group_id": {
                     "type": "integer"
                 },
+                "host_fqdn": {
+                    "type": "string"
+                },
                 "hostname": {
+                    "type": "string"
+                },
+                "ilo_api_flavour": {
+                    "type": "string"
+                },
+                "ilo_fqdn": {
+                    "type": "string"
+                },
+                "ilo_ip": {
+                    "type": "string"
+                },
+                "ilo_password": {
+                    "type": "string"
+                },
+                "ilo_port": {
+                    "type": "string"
+                },
+                "ilo_user": {
                     "type": "string"
                 },
                 "ip": {

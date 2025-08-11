@@ -10,9 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/imdario/mergo"
-	"github.com/maxiepax/go-via/db"
-	"github.com/maxiepax/go-via/models"
 	"github.com/sirupsen/logrus"
+	"gitlab.soultec.ch/soultec/souldeploy/db"
+	"gitlab.soultec.ch/soultec/souldeploy/models"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +30,29 @@ func ListAddresses(c *gin.Context) {
 		Error(c, http.StatusInternalServerError, res.Error) // 500
 		return
 	}
+
+	RetrieveLeases()
 	c.JSON(http.StatusOK, items) // 200
+}
+
+func RetrieveLeases() ([]models.Address, error) {
+	var leases []models.Address
+	if res := db.DB.Where("expires > datetime('now', 'utc')").Find(&leases); res.Error != nil {
+		if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil, res.Error
+		}
+	}
+
+	for lease := range leases {
+		// Print the lease and the mac/ip address
+		logrus.WithFields(logrus.Fields{
+			"mac":  leases[lease].Mac,
+			"ip":   leases[lease].IP,
+			"pool": leases[lease].PoolID,
+		}).Info("dhcp: lease")
+
+	}
+	return leases, nil
 }
 
 // GetAddress Get an existing address
@@ -109,24 +131,24 @@ func SearchAddress(c *gin.Context) {
 // @Tags addresses
 // @Accept  json
 // @Produce  json
-// @Param item body models.AddressForm true "Add ip address"
+// @Param item body  models.DeviceAddressForm true "Add ip address"
 // @Success 200 {object} models.Address
 // @Failure 400 {object} models.APIError
 // @Failure 500 {object} models.APIError
 // @Router /addresses [post]
 func CreateAddress(c *gin.Context) {
-	var form models.AddressForm
+	var form models.DeviceAddressForm
 
 	if err := c.ShouldBind(&form); err != nil {
 		Error(c, http.StatusBadRequest, err) // 400
 		return
 	}
 
-	item := models.Address{AddressForm: form}
+	item := models.Address{DeviceAddressForm: form}
 
 	// get the pool network info to verify if this ip should be added to the pool.
 	var na models.Pool
-	db.DB.First(&na, "id = ?", item.AddressForm.PoolID)
+	db.DB.First(&na, "id = ?", item.DeviceAddressForm.PoolID)
 
 	cidr := item.IP + "/" + strconv.Itoa(na.Netmask)
 	network := na.NetAddress + "/" + strconv.Itoa(na.Netmask)
@@ -142,20 +164,26 @@ func CreateAddress(c *gin.Context) {
 
 		if bytes.Compare(trial, start) >= 0 && bytes.Compare(trial, end) <= 0 {
 			logrus.WithFields(logrus.Fields{
-				"ip":    trial,
-				"start": start,
-				"end":   end,
+				"ip":    trial.String(),
+				"start": start.String(),
+				"end":   end.String(),
 			}).Debug("ip validation successful")
 		} else {
 			logrus.WithFields(logrus.Fields{
-				"ip":    trial,
-				"start": start,
-				"end":   end,
+				"ip":    trial.String(),
+				"start": start.String(),
+				"end":   end.String(),
 			}).Debug("the ip address is not in the scope of the dhcp pool associated with the group")
 			Error(c, http.StatusBadRequest, fmt.Errorf("the ip address is not in the scope of the dhcp pool associated with the group")) // 400
 			return
 		}
 	} else {
+		logrus.WithFields(logrus.Fields{
+			"netmask": na.Netmask,
+			"start":   start.String(),
+			"end":     end.String(),
+			"ip":      item.IP,
+		}).Debug("the ip address is not in the scope of the dhcp pool associated with the group")
 		Error(c, http.StatusBadRequest, fmt.Errorf("the ip address is not in the scope of the dhcp pool associated with the group")) // 400
 		return
 	}
@@ -201,7 +229,7 @@ func CreateAddress(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param  id path int true "Address ID"
-// @Param  item body models.AddressForm true "Update an ip address"
+// @Param  item body  models.DeviceAddressForm true "Update an ip address"
 // @Success 200 {object} models.Address
 // @Failure 400 {object} models.APIError
 // @Failure 404 {object} models.APIError
@@ -215,7 +243,7 @@ func UpdateAddress(c *gin.Context) {
 	}
 
 	// Load the form data
-	var form models.AddressForm
+	var form models.DeviceAddressForm
 	if err := c.ShouldBind(&form); err != nil {
 		Error(c, http.StatusBadRequest, err) // 400
 		return
@@ -233,13 +261,13 @@ func UpdateAddress(c *gin.Context) {
 	}
 
 	// Merge the item and the form data
-	if err := mergo.Merge(&item, models.Address{AddressForm: form}, mergo.WithOverride); err != nil {
+	if err := mergo.Merge(&item, models.Address{DeviceAddressForm: form}, mergo.WithOverride); err != nil {
 		Error(c, http.StatusInternalServerError, err) // 500
 	}
 
 	// Mergo doesn't overwrite 0 or false values, force set
-	item.AddressForm.Reimage = form.Reimage
-	item.AddressForm.Progress = form.Progress
+	item.DeviceAddressForm.Reimage = form.Reimage
+	item.DeviceAddressForm.Progress = form.Progress
 
 	// Save it
 	if res := db.DB.Save(&item); res.Error != nil {

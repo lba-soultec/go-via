@@ -1,5 +1,5 @@
-//go:generate bash -c "go get github.com/swaggo/swag/cmd/swag && swag init"
-//go:generate bash -c "cd web && rm -rf ./web/dist && npm install --legacy-peer-deps && npm run build && cd .. && go get github.com/rakyll/statik && statik -src ./web/dist -f"
+//go:generate bash -c "swag init"
+//go:generate bash -c "cd web && rm -rf ./web/dist && npm install --legacy-peer-deps && npm run build && cd .. && statik -src ./web/dist/web -f"
 
 package main
 
@@ -8,16 +8,18 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 
-	"github.com/maxiepax/go-via/api"
-	"github.com/maxiepax/go-via/config"
-	ca "github.com/maxiepax/go-via/crypto"
-	"github.com/maxiepax/go-via/db"
-	"github.com/maxiepax/go-via/models"
-	"github.com/maxiepax/go-via/secrets"
-	"github.com/maxiepax/go-via/websockets"
-	"github.com/rakyll/statik/fs"
+	"gitlab.soultec.ch/soultec/souldeploy/api"
+	"gitlab.soultec.ch/soultec/souldeploy/config"
+	ca "gitlab.soultec.ch/soultec/souldeploy/crypto"
+	"gitlab.soultec.ch/soultec/souldeploy/db"
+	"gitlab.soultec.ch/soultec/souldeploy/models"
+	"gitlab.soultec.ch/soultec/souldeploy/secrets"
+	"gitlab.soultec.ch/soultec/souldeploy/websockets"
+
+	"github.com/gin-contrib/static"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -26,16 +28,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/koding/multiconfig"
 
+	"github.com/rakyll/statik/fs"
 	"github.com/sirupsen/logrus"
-
-	_ "github.com/maxiepax/go-via/docs"
-	_ "github.com/maxiepax/go-via/statik"
+	_ "gitlab.soultec.ch/soultec/souldeploy/docs"
+	_ "gitlab.soultec.ch/soultec/souldeploy/statik"
 )
 
 var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	commit = "none"
+	date   = "unknown"
 )
 
 // @title go-via
@@ -48,12 +49,10 @@ func main() {
 
 	logServer := websockets.NewLogServer()
 	logrus.AddHook(logServer.Hook)
-
+	ConfigureLogger()
 	//setup logging
 	logrus.WithFields(logrus.Fields{
-		"version": version,
-		"commit":  commit,
-		"date":    date,
+		"commit": commit,
 	}).Infof("Startup")
 
 	//enable config
@@ -160,8 +159,11 @@ func main() {
 	}
 
 	// DHCPd
+	logrus.Info("Check Config for DHCP", conf, conf.DisableDhcp)
 	if !conf.DisableDhcp {
+		logrus.Info("Starting DHCP")
 		for _, v := range conf.Network.Interfaces {
+			logrus.Infof("Starting DHCP on %s", v)
 			go serve(v)
 		}
 	}
@@ -173,71 +175,29 @@ func main() {
 	r := gin.New()
 	r.Use(cors.Default())
 
+	// ks.cfg is served at top to not place it behind BasicAuth
+	r.GET("ks.cfg", api.Ks(key))
+
 	statikFS, err := fs.New()
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	// ks.cfg is served at top to not place it behind BasicAuth
-	r.GET("ks.cfg", api.Ks(key))
-
-	// middleware to check if user is logged in
-	r.Use(func(c *gin.Context) {
-		username, password, hasAuth := c.Request.BasicAuth()
-		if !hasAuth {
-			logrus.WithFields(logrus.Fields{
-				"login": "unauthorized request",
-			}).Info("auth")
-			c.Writer.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		//get the user that is trying to authenticate
-		var user models.User
-		if res := db.DB.Select("username", "password").Where("username = ?", username).First(&user); res.Error != nil {
-			logrus.WithFields(logrus.Fields{
-				"username": username,
-				"status":   "supplied username does not exist",
-			}).Info("auth")
-			c.Writer.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		//check if passwords match
-		if api.ComparePasswords(user.Password, []byte(password), username) {
-			logrus.WithFields(logrus.Fields{
-				"username": username,
-				"status":   "successfully authenticated",
-			}).Debug("auth")
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"username": username,
-				"status":   "invalid password supplied",
-			}).Info("auth")
-			c.Writer.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		c.Next()
-	})
+	r.Use(static.Serve("/", NewMyServeFileSystem(statikFS)))
 
 	r.NoRoute(func(c *gin.Context) {
-		c.Request.URL.Path = "/web/" // force us to always return index.html and not the requested page to be compatible with HTML5 routing
-		http.FileServer(statikFS).ServeHTTP(c.Writer, c.Request)
+		logrus.Debugf("%s doesn't exists, redirect on /\n", c.Request.URL.Path)
+		c.Redirect(http.StatusMovedPermanently, "/")
 	})
 
 	ui := r.Group("/")
 	{
-		ui.GET("/web/*all", gin.WrapH(http.FileServer(statikFS)))
 
-		ui.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		ui.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
 	v1 := r.Group("/v1")
 	{
-		//v1.GET("log", logServer.Handle)
 
 		pools := v1.Group("/pools")
 		{
@@ -318,9 +278,28 @@ func main() {
 			postconfig.GET(":id", api.PostConfigID(key))
 		}
 
+		login := v1.Group("/login")
+		{
+			login.POST("", api.Login)
+		}
+
+		hostConfig := v1.Group("/hostconfig")
+		{
+			hostConfig.GET("", api.HostConfig)
+		}
+		hosts := v1.Group("/hosts")
+		{
+			hosts.POST(":id/setvlanID", api.SetVLANID)     // Set VLAN ID
+			hosts.POST(":id/start", api.StartHost)         // Start the host
+			hosts.POST(":id/shutdown", api.ShutdownHost)   // Shutdown the host
+			hosts.POST(":id/reboot", api.RebootHost)       // Reboot the host
+			hosts.POST(":id/onetimeboot", api.OneTimeBoot) // Set one time boot
+
+			hosts.POST("/checkilo", api.CheckIP) // Check ILO IP
+		}
 		v1.GET("log", logServer.Handle)
 
-		v1.GET("version", api.Version(version, commit, date))
+		v1.GET("version", api.Version(commit, date))
 	}
 
 	/*	r.GET("postconfig", api.PostConfig) */
@@ -351,4 +330,29 @@ func main() {
 		"error": err,
 	}).Error("Webserver")
 
+}
+
+// ServeFileSystem implementation that wraps around http.FileSystem
+type MyServeFileSystem struct {
+	fs http.FileSystem
+}
+
+// NewMyServeFileSystem creates a new instance of MyServeFileSystem
+func NewMyServeFileSystem(fs http.FileSystem) *MyServeFileSystem {
+	return &MyServeFileSystem{fs: fs}
+}
+
+// Open implements the http.FileSystem interface
+func (fs *MyServeFileSystem) Open(name string) (http.File, error) {
+	return fs.fs.Open(name)
+}
+
+// Exists implements the Exists method to check if a file exists
+func (fs *MyServeFileSystem) Exists(prefix string, path string) bool {
+	// Join prefix and path to create the full file path
+	fullPath := filepath.Join(prefix, path)
+
+	// Check if the file exists in the wrapped file system
+	_, err := fs.fs.Open(fullPath)
+	return err == nil // If there's no error, the file exists
 }

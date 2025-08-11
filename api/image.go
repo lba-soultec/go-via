@@ -19,10 +19,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/imdario/mergo"
 	"github.com/kdomanski/iso9660/util"
-	"github.com/maxiepax/go-via/config"
-	"github.com/maxiepax/go-via/db"
-	"github.com/maxiepax/go-via/models"
 	"github.com/sirupsen/logrus"
+	"gitlab.soultec.ch/soultec/souldeploy/config"
+	"gitlab.soultec.ch/soultec/souldeploy/db"
+	"gitlab.soultec.ch/soultec/souldeploy/models"
 	"gorm.io/gorm"
 )
 
@@ -155,7 +155,9 @@ func CreateImage(conf *config.Config) func(c *gin.Context) {
 			fp := path.Join(".", "tftp", fn)
 
 			if err = util.ExtractImageToDirectory(f, fp); err != nil {
-				log.Fatalf("failed to extract image: %s", err)
+				logrus.Errorf("failed to extract image: %s", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to extract image: %s", err)})
+				return
 			}
 
 			//remove the file

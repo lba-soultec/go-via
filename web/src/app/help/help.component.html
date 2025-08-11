@@ -1,3 +1,4 @@
+<div class="content-area">
 <h1> Howto use VIA </h1>
 
 <h2> Creating </h2>
@@ -5,6 +6,9 @@
 <h3> Create a pool </h3>
 First, create a pool of ips. Hosts will be able to request these ips via DHCP when you allow them to be re-imaged. If a
 host is not set to be re-imaged, the DHCP server will refuse to hand out addresses.
+<h4> Upload Pools </h4>
+To Upload Pools you can import a csv that contains the Pools to upload. The csv should contain the following columns: name, start_address, end_address, netmask, net_address, gateway.
+An Example of the csv can be downloaded here: <a href="assets/pool_form_data.csv" download>pool_form_data.csv</a>
 
 <h3> Upload a ESXi ISO Image </h3>
 Second step is to upload an ESXi ISO. No other operating systems are currently supported since a lot of background
@@ -45,7 +49,9 @@ hostd without doing it via SSH, so this operation will generate a reboot.<br />
 Create hosts by defining a FQDN, ip address and mac-address. <br />
 - Advanced Options: <br />
   - ks.cfg: this field allows you to override the default kickstart configuration file for this specific host. This will override any Group level ks.cfg.
-
+<h4> Upload Hosts </h4>
+To Upload Hosts you can import a csv that contains the hosts to upload per group. The csv should contain the following columns: FQDN, IP, MAC.
+An Example of the csv can be downloaded here: <a href="assets/hosts_form_data.csv" download>hosts_form_data.csv</a>
 
 <h3> Start imaging </h3>
 To initiate a host imaging/re-imaging, simply press the re-image button next to the host, and reboot it. If the host is
@@ -144,4 +150,6 @@ install --overwritevmfs {{ if not .createvmfs }} --novmfsondisk {{ end }} --firs
 network --bootproto=static --ip={{ .ip }} --gateway={{ .gateway }} --netmask={{ .netmask }} --nameserver={{ .dns }} --hostname={{ .hostname }} --device={{ .mac }} {{if .vlan}} --vlanid={{.vlan}} {{end}} <br/>
 <br/>
 reboot</i></p>
+</div>
+
 </div>

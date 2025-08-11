@@ -10,10 +10,10 @@ import (
 	"encoding/base64"
 
 	"github.com/gin-gonic/gin"
-	"github.com/maxiepax/go-via/db"
-	"github.com/maxiepax/go-via/models"
-	"github.com/maxiepax/go-via/secrets"
 	"github.com/sirupsen/logrus"
+	"gitlab.soultec.ch/soultec/souldeploy/db"
+	"gitlab.soultec.ch/soultec/souldeploy/models"
+	"gitlab.soultec.ch/soultec/souldeploy/secrets"
 	"gorm.io/gorm/clause"
 )
 
@@ -41,7 +41,7 @@ network --bootproto=static --ip={{ .ip }} --gateway={{ .gateway }} --netmask={{ 
 reboot
 `
 
-//func Ks(c *gin.Context) {
+// func Ks(c *gin.Context) {
 func Ks(key string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var item models.Address

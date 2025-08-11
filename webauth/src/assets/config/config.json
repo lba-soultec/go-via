@@ -1,0 +1,18 @@
+{
+    "authConfig": {
+      "scope": "openid profile email offline_access",
+      "responseType": "code",
+      "oidc": true,
+      "clientId": "321108093071113652",
+      "issuer": "https://turgovia-0q71vg.us1.zitadel.cloud",
+      "redirectUri": "http://localhost:4200/auth/callback",
+      "postLogoutRedirectUri": "http://localhost:4200/signedout",
+      "requireHttps": false
+    },
+    "allowedUrls": [
+        "turgovia-0q71vg.us1.zitadel.cloud/admin/v1",
+        "turgovia-0q71vg.us1.zitadel.cloud/management/v1",
+        "turgovia-0q71vg.us1.zitadel.cloud/auth/v1/"
+      ],
+    "billingApiEndpoint": "http://localhost:8081"
+  }

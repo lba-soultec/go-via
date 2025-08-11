@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/maxiepax/go-via/db"
+	"gitlab.soultec.ch/soultec/souldeploy/db"
 	"gorm.io/gorm"
 )
 

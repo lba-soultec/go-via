@@ -1,27 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../api.service';
 import {
-  FormBuilder,
+  UntypedFormBuilder,
   FormControl,
-  FormGroup,
+  UntypedFormGroup,
   Validators
 } from '@angular/forms';
 
 @Component({
-  selector: 'app-manage-users',
-  templateUrl: './manage-users.component.html',
-  styleUrls: ['./manage-users.component.scss']
+    selector: 'app-manage-users',
+    templateUrl: './manage-users.component.html',
+    styleUrls: ['./manage-users.component.scss'],
+    standalone: false
 })
 export class ManageUsersComponent implements OnInit {
   user;
   users;
   errors;
-  form: FormGroup;
+  form: UntypedFormGroup;
   showUserModalMode = "";
 
   constructor(
     private apiService: ApiService,
-    private formBuilder: FormBuilder
+    private formBuilder: UntypedFormBuilder
   ) {
     this.form = this.formBuilder.group({
       username: ['', [Validators.required]],
@@ -50,6 +51,9 @@ export class ManageUsersComponent implements OnInit {
       this.form.reset();
     }
   }
+
+
+
 
   submit() {
     const data = {

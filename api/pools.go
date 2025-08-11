@@ -9,8 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/imdario/mergo"
-	"github.com/maxiepax/go-via/db"
-	"github.com/maxiepax/go-via/models"
+	"gitlab.soultec.ch/soultec/souldeploy/db"
+	"gitlab.soultec.ch/soultec/souldeploy/models"
 	"gorm.io/gorm"
 )
 
@@ -181,7 +181,7 @@ func GetNextFreeIP(c *gin.Context) {
 	}
 
 	resp := models.Address{
-		AddressForm: models.AddressForm{
+		DeviceAddressForm: models.DeviceAddressForm{
 			IP: ip.String(),
 		},
 	}

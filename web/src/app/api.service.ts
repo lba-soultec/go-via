@@ -1,16 +1,24 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
+
   constructor(private httpClient: HttpClient) {}
 
   public getHosts() {
     return this.httpClient.get(
       'https://' + window.location.host + '/v1/addresses'
+    );
+  }
+
+  public getHost(id) {
+    return this.httpClient.get(
+      'https://' + window.location.host + '/v1/addresses/' + id
     );
   }
 
@@ -27,6 +35,8 @@ export class ApiService {
       data
     );
   }
+
+
 
   public reimageHost(id) {
     return this.httpClient.patch(
@@ -169,6 +179,84 @@ export class ApiService {
   public getVersion() {
     return this.httpClient.get(
       'https://' + window.location.host + '/v1/version'
+    );
+  }
+
+  public checkILOM(ip, port) {
+    return this.httpClient.post(
+      'https://' + window.location.host + '/v1/hosts/checkilo',
+      {
+        iloIpAddr: ip,
+        port: String(port),
+      }
+    );
+  }
+
+  public restartHost(hostId, payload) {
+    return this.httpClient.post(
+      `https://${window.location.host}/v1/hosts/${hostId}/reboot`,
+      payload
+    );
+  }
+  public addHostVlan(hostId, payload)  {
+    console.log(payload)
+    return this.httpClient.post(
+      `https://${window.location.host}/v1/hosts/${hostId}/setvlanID`,
+      payload
+    );
+  }
+  public shutdownHost(hostId, payload) {
+    return this.httpClient.post(
+      `https://${window.location.host}/v1/hosts/${hostId}/shutdown`,
+      payload
+    );
+  }
+  public startHost(hostId, payload) {
+    console.log(payload)
+    return this.httpClient.post(
+      `https://${window.location.host}/v1/hosts/${hostId}/start`,
+      payload
+    );
+  }
+
+  public setOneTimeBoot(hostId, payload) {
+    return this.httpClient.post(
+      `https://${window.location.host}/v1/hosts/${hostId}/onetimeboot`,
+      payload
+    );
+  }
+
+  public getHostConfig(ip: string, port: number, apiFlavour: string, username: string, password: string): Observable<any> {
+    // Log the parameters to the console
+    console.log(`getHostConfig called with ip: ${ip}, port: ${port}, apiFlavour: ${apiFlavour}`);
+
+    // Return a mocked successful response
+    return this.httpClient.get(
+      'https://' + window.location.host + '/v1/hostconfig',
+      {
+        params: {
+          iloIpAddr: ip,
+          port: String(port),
+          apiFlavour: apiFlavour,
+          username: username,
+          password: password,
+        }
+      }
+    );
+  }
+
+  public getFormattedAddresses(): Observable<any[]> {
+    return this.httpClient.get<any[]>(
+      `https://${window.location.host}/v1/addresses`
+    ).pipe(
+      map((addresses) => {
+        return addresses.map(address => ({
+          ip: address.ip,
+          hostname: address.hostname,
+          domain: address.domain,
+          expires_at: address.expires_at,
+        }));
+      })
     );
   }
 }

@@ -1,239 +1,73 @@
-Custom deployment tool for VMware ESXi Hypervisor
-=========================================
+#  soulTec Deployment Appliance aka soulDeploy!
 
-Credits
--------
+## Project Goal
 
-Massive credits go to one of my best friends, and mentor [Jonathan "stamp" G](https://www.github.com/stamp) for all the help, coaching and lessons during this project.
-Without your support this project would never have been a reality.
+- Automatisiertes Deployment von ESXi inkl Grundkonfiguration
+- Packetierte Appliance (PhotonOS based, Installation beim Kunden via OVA)
 
-VMware #clarity-ui channel for being super helpful with newbie questions about clarity!
+Ablauf bei Kundeninstallation:
 
+- Import OVA: Angabe von IP, GW, DNS der Appliance
+- Erfassung des DHCP Scopes
+- Upload ESXi Images
+- Erfassen Host Group
+- Erfassen Hosts mit MAC Adressen 
 
-What is go-via?
----------------
-go-via is a single binary, that when executed performs the tasks of dhcpd, tftpd, httpd, and ks.cfg generator, with a angular front-end, and http-rest backend written in go, and sqlite for persisting.
+**End-Goal:**
 
-Why a new version of VMware Imaging Appliance?
-----------------------------------------------
-The old version of VIA had some things it didn't support which made it hard to run in enterprise environments. go-via brings added support for the following.
-1. IP-Helper , you can have the go-via binary running on any network you want and use [RFC 3046 IP-Helper](https://tools.ietf.org/html/rfc3046) to relay DHCP requests to the server.
-2. UEFI , go-via does not support BIOS, but does support UEFI and secure-boot. BIOS may be added in the future.
-3. Virtual environments, it does not block nested esxi host deployment.
-4. HTTP-REST, everything you can do in the UI, you can do via automation also.
-5. Options to perform all prerequisites for VMware Cloud Foundation 4.x/5.x
+Anhand MAC Adressen der iLOs und Values Files (ESXi Management Subnetz) werden Host Gruppen und Hosts im GoVIA automatisch erfasst.
 
-Supported Architectures
------------------------
-UEFI x86_64 INTEL/AMD architecture
-UEFI arm_64 ARM architecture (including Project Monterey/SmartNICs)
+## Tech
 
-Default username / password / port
-----------------------
-username: admin <br>
-password: VMware1!<br>
-port: 8443<br>
+Die Appliance basiert auf PhotonOS und beinhaltet (goVIA)[https://github.com/maxiepax/go-via] als docker-container
 
-Installation / Running
-----------------------
-<h3> Option 1: docker container </h3>
-To run this container on a ubuntu 21.04 server, do the following:<br>
-
-install docker-ce (https://docs.docker.com/engine/install/ubuntu/)
-``` bash
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-```
-
-install latest docker-compose,  
-``` bash
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose
-sudo chmod +x /usr/bin/docker-compose
-```
-
-Option A: create the following docker-compose.yaml file to not specify a config file (dhcpd will serve on all interfaces)
-``` yaml
-version: "3.9"
-services:
-  go-via:
-    image: maxiepax/go-via:latest
-    network_mode: host
-    volumes:
-      - ./tftp:/go/tftp
-      - ./database:/go/database
-      - ./config:/go/config
-      - ./cert:/go/cert
-      - ./secret:/go/secret
-
-```
-
-Option B: or create this docker-compose.yaml to specify a config file, and place config in ./config/config.json
-``` yaml
-version: "3.9"
-services:
-  go-via:
-    image: maxiepax/go-via:latest
-    network_mode: host
-    volumes:
-      - ./tftp:/go/tftp
-      - ./database:/go/database
-      - ./config:/go/config
-      - ./cert:/go/cert
-      - ./secret:/go/secret
-    command: -file /go/config/config.json
-
-```
-Example config file
-``` json
-{
-    "network": {
-        "interfaces": ["ens224", "ens192"]
-    },
-    "port": 443
-}
-```
-
-now start the container
-
-``` bash
-sudo docker-compose up -d
-```
-
-<h3> Option 2: Download the latest release, and run ./go-via -file config.json </h3>
-
-Most linux distributions should work, this has been tested on Ubuntu 20.20.
-
-``` bash
-#wget the release you want to download, e.g go-via_.<release>_linux_amd64.tar.gz
-wget https://github.com/maxiepax/go-via/releases/download/<release>/go-via_.<release>_linux_amd64.tar.gz
+goVIA stellt ein WebUI zur Verfügung. Nebst dem ist der goVIA Container dhcp und tfpd server.
 
 
-#untar/extract it
-tar -zxvf go-via_.<release>_linux_amd64.tar.gz
-```
-This will extract the files README.MD (this document) and go-via binary.
+## Architecture
 
-Optional: example config files.
+![Architecture](https://gitlab.soultec.ch/soultec/souldeploy/-/raw/main/architecture/govia-overview.png)
 
-Multi interface, and custom port.
-``` json
-{
-    "network": {
-        "interfaces": ["ens224", "ens192"]
-    },
-    "port": 443
-}
-```
-Single interface, default port 8443
-``` json
-{
-    "network": {
-        "interfaces": ["ens224"]
-    }
-}
-```
+-> INFOS für Netzwerk-Team des Kunden:
 
-Now start the binary as super user, (optionally: pointing to the config file.)
-``` bash
-#start the application with default settings
-sudo ./go-via
 
-#start the application with normal debug level
-sudo ./go-via -file config.json
 
-#start the application with verbose debug level
-sudo ./go-via -file config.json -debug
-```
+## Open Tasks
 
-Example systemd.service config file
-```
-[Unit]
-Description=go-via
-After=network.target
+Please see: https://linear.app/soultec/project/soultec-deployment-appliance-a273c6e54bec/overview
 
-[Service]
-Type=simple
-Restart=always
-RestartSec=1
-User=root
-ExecStart=/home/govia/go-via
-WorkingDirectory=/home/govia/go-via
 
-[Install]
-WantedBy=multi-user.target
-```
+### DEMO ENV
 
-You should be greeted with the following output.
-``` bash
-INFO[0000] Startup                                       commit=none date=unknown version=dev
-WARN[0000] no interfaces have been configured, trying to find interfaces to serve to, will serve on all. 
-INFO[0000] Existing database sqlite-database.db found   
-INFO[0000] Starting dhcp server                          int=ens224 ip=172.16.100.1 mac="00:0c:29:91:cf:eb"
-INFO[0000] Starting dhcp server                          int=ens192 ip=192.168.1.173 mac="00:0c:29:91:cf:e1"
-INFO[0000] Starting dhcp server                          int=docker0 ip=172.17.0.1 mac="02:42:09:9f:04:4f"
-INFO[0000] cert                                          server.crt="server.crt found"
-INFO[0000] Webserver                                     port=":8443"
-```
+goVIA ist als docker container auf einer photonOS prepacked.
 
-<h3> Option 3: Download source and compile with go 1.16 and Angular 11 </h3>
+- https://10.177.176.17:8443/
 
-with Ubuntu 20.20 installed, do the following:
-install golang 1.16.x compiler
-``` bash
-sudo snap install go --classic
-```
-install npm
-``` bash
-sudo apt-get install npm
-```
-install angular-cli
-``` bash
-sudo npm install npm@latest -g
-sudo npm install -g @angular/cli
-```
-start two terminals:
+- https://souldeploy.soultec.lab:8443/
 
-terminal 1:
-``` bash
-mkdir ~/go
-cd ~/go
-git clone https://github.com/maxiepax/go-via.git
-cd go-via
-go run *.go
-```
+*Demo Hosts (w/ iLO5):*
 
-terminal 2:
-``` bash
-cd ~/go-via/web
-npm install
-# to only allow localhost access to gui:
-ng serve
-# to allow anyone access to gui:
-ng serve --host 0.0.0.0
-```
+https://10.24.12.201/
 
-Troubleshooting
----------------
-To troubleshoot, enable debugging.
+https://10.24.12.202/
 
-Option 1: Docker Container. Append -debug to command.
-``` bash
-command: -debug
-or
-command: -file /go/config/config.json -debug
-```
 
-Option 2: Source or Binary. Append -debug to command
-``` bash
-./go-via -debug
-```
+## Container Image
 
-Known issues
-------------
-Please note that go-via is still under heavy development, and there may be bugs. Following is the list of known issues.
+Das neuste Container Image ist auf diesem Repo verfügbar.
+- https://gitlab.soultec.ch/soultec/souldeploy/container_registry
 
-currently tracking no known issues! :D
+Die Container Registry ist eingeschränkt im Internet verfügbar. Zusätzliches Whitelisting von Public IPs können bei der internen IT beantragt werden.
 
-Todo
------
-- Currently no requests have been made for features. Please submit any ideas you have.
+## Notes on Network Config and HPE Server.
+
+- The Server must boot from the NIC where ESXi Management Uplink should be 
+- The MAC Adress of this pNIC must be added in the soulDeploy frontend
+- If the ESXi Management VLAN is only tagged on the physical Network, you can set VLAN ID in the RBSU, [see here](https://support.hpe.com/hpesc/public/docDisplay?docId=a00112581en_usen_us&page=GUID-D7147C7F-2016-0901-0A69-000000000AA1.html&docLocale=en_US)
+    - "Use the VLAN Configuration option to configure global VLAN settings for all enabled network interfaces. The configuration includes interfaces used in PXE boot, iSCSI boot, and HTTP/HTTPS boot, and for all preboot network access from the Embedded UEFI Shell."
+    - After VLAN Config is set on RBSU, reboot the Server.
+
+
+## Weitere Infos
+
+PowerPoints und Demo Videos auf: https://soultecag.sharepoint.com/:f:/s/soulTecStreams/Eku6zA_K_BNAq2r_q4tpSeUB6BEd-oN-CDnSu2oMuw7Cbg?e=brPnlI
