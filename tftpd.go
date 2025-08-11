@@ -39,11 +39,6 @@ import (
 func readHandler(conf *config.Config) func(string, io.ReaderFrom) error {
 	return func(filename string, rf io.ReaderFrom) error {
 
-		// TODO: check after updating
-		// old:
-		// raddr := rf.(tftp.OutgoingTransfer).RemoteAddr()
-		// laddr := rf.(tftp.RequestPacketInfo).LocalIP()
-
 		// get the requesting ip-address and our source address
 		raddr := rf.(tftp.OutgoingTransfer).RemoteAddr()
 		laddr := rf.(tftp.RequestPacketInfo).LocalIP()
@@ -196,9 +191,6 @@ func serveBootCfg(filename string, address models.Address, image models.Image, r
 	// get the requesting ip-address and our source address
 	raddr := rf.(tftp.OutgoingTransfer).RemoteAddr()
 
-	// TODO: check after updating
-	// old:
-	//	laddr := rf.(tftp.RequestPacketInfo).LocalIP()
 	laddr := rf.(tftp.RequestPacketInfo).LocalIP()
 
 	//strip the port
