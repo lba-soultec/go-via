@@ -311,7 +311,12 @@ func main() {
 		logrus.WithFields(logrus.Fields{
 			"certificate": "server.crt does not exist, initiating new CA and creating self-signed ceritificate server.crt",
 		}).Info("cert")
-		os.MkdirAll("cert", os.ModePerm)
+		err := os.MkdirAll("cert", os.ModePerm)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("could not create cert directory")
+		}
 		ca.CreateCA()
 		ca.CreateCert("./cert", "server", "server")
 	} else {

@@ -37,7 +37,14 @@ func serve(intf string) {
 	if err != nil {
 		logrus.Fatalf("dhcp: failed to listen: %v", err)
 	}
-	defer c.Close()
+	defer func() {
+		err := c.Close()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("could not close raw socket")
+		}
+	}()
 
 	logrus.WithFields(logrus.Fields{
 		"mac": mac,
@@ -129,7 +136,12 @@ func serve(intf string) {
 				continue
 			}
 
-			c.WriteTo(buf.Bytes(), src)
+			_, err = c.WriteTo(buf.Bytes(), src)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"err": err,
+				}).Warn("dhcp: failed to send response")
+			}
 
 			//spew.Dump(resp)
 			logrus.WithFields(logrus.Fields{
@@ -183,7 +195,12 @@ func buildHeaders(mac net.HardwareAddr, ip net.IP, srcEth *layers.Ethernet, srcI
 		udp.DstPort = 68
 	}
 
-	udp.SetNetworkLayerForChecksum(ip4)
+	err := udp.SetNetworkLayerForChecksum(ip4)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("could not set network layer for checksum")
+	}
 
 	return []gopacket.SerializableLayer{eth, ip4, udp}
 }

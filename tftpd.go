@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
+
 	"net"
 	"os"
 	"path"
@@ -207,7 +207,7 @@ func serveBootCfg(filename string, address models.Address, image models.Image, r
 	address.Progresstext = "installation"
 	db.DB.Save(&address)
 
-	bc, err := ioutil.ReadFile(image.Path + "/BOOT.CFG")
+	bc, err := os.ReadFile(image.Path + "/BOOT.CFG")
 	if err != nil {
 		logrus.Warn(err)
 		return
@@ -239,7 +239,13 @@ func serveBootCfg(filename string, address models.Address, image models.Image, r
 
 	// load options from the group
 	options := models.GroupOptions{}
-	json.Unmarshal(address.Group.Options, &options)
+	err = json.Unmarshal(address.Group.Options, &options)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("could not unmarshal group options")
+		return
+	}
 
 	// if autopart is configured for the group, append autopart to kernelopt - https://kb.vmware.com/s/article/77009
 	/*

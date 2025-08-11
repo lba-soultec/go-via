@@ -73,7 +73,13 @@ func ProvisioningWorker(item models.Address, key string) {
 
 	//create empty model and load it with the json content from database
 	options := models.GroupOptions{}
-	json.Unmarshal(item.Group.Options, &options)
+	err := json.Unmarshal(item.Group.Options, &options)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"postconfig": "couldn't unmarshal group options",
+		}).Debug(item.IP)
+		return
+	}
 	logrus.WithFields(logrus.Fields{
 		"Started worker for ": item.Hostname,
 	}).Debug("host")
@@ -100,7 +106,7 @@ func ProvisioningWorker(item models.Address, key string) {
 
 	// ensure that host has enough time to boot, and for SOAP API to respond
 	var c *govmomi.Client
-	var err error
+
 	ctx := context.Background()
 	i := 1
 	timeout := 360
@@ -241,7 +247,7 @@ func ProvisioningWorker(item models.Address, key string) {
 
 	//certificate
 	if options.Certificate {
-		err := PostConfigCertificate(e, item, decryptedPassword, ctx, timeout, i, c, url)
+		err := PostConfigCertificate(e, item, decryptedPassword, ctx, timeout, i, url)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"postconfig-certificate": err,
@@ -528,9 +534,16 @@ func PostConfigVlan(e *esxcli.Executor, item models.Address) error {
 	return nil
 }
 
-func PostConfigCertificate(e *esxcli.Executor, item models.Address, decryptedPassword string, ctx context.Context, timeout int, i int, c *govmomi.Client, url *url.URL) error {
+func PostConfigCertificate(e *esxcli.Executor, item models.Address, decryptedPassword string, ctx context.Context, timeout int, i int, url *url.URL) (err error) {
+	var c *govmomi.Client
 	//create directory
-	os.MkdirAll("./cert/"+item.Hostname+"."+item.Domain, os.ModePerm)
+	err = os.MkdirAll("./cert/"+item.Hostname+"."+item.Domain, os.ModePerm)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"postconfig": "couldn't create certificate directory",
+		}).Debug(item.IP)
+		return err
+	}
 	//create certificate
 	ca.CreateCert("./cert/"+item.Hostname+"."+item.Domain, "rui", item.Hostname+"."+item.Domain)
 
@@ -541,15 +554,28 @@ func PostConfigCertificate(e *esxcli.Executor, item models.Address, decryptedPas
 			"postconfig": "couldn't find the .crt file",
 		}).Debug(item.IP)
 	}
-	defer crt.Close()
-
+	defer func() {
+		err := crt.Close()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("could not close private key file")
+		}
+	}()
 	key, err := os.Open("./cert/" + item.Hostname + "." + item.Domain + "/rui.key")
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"postconfig": "couldn't find the .key file",
 		}).Debug(item.IP)
 	}
-	defer key.Close()
+	defer func() {
+		err := key.Close()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Warn("could not close private key file")
+		}
+	}()
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	putRequest("https://"+item.IP+"/host/ssl_cert", crt, "root", decryptedPassword)

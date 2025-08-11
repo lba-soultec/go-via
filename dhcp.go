@@ -103,7 +103,13 @@ func processDiscover(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (resp *lay
 
 	resp.Options = append(resp.Options, layers.NewDHCPOption(layers.DHCPOptMessageType, []byte{byte(layers.DHCPMsgTypeOffer)}))
 
-	AddOptions(req, resp, *pool, lease, ip)
+	err = AddOptions(req, resp, *pool, lease, ip)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("could not add options to DHCP response")
+		return nil, err
+	}
 
 	//req *layers.DHCPv4, resp *layers.DHCPv4, pool models.PoolWithAddresses, lease *models.Address, ip net.IP
 
@@ -133,7 +139,7 @@ func processRequest(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 	addresses := append(reimageAddresses, pool.Addresses...)
 
 	// Extract the requested IP
-	var requestedIP net.IP = req.ClientIP
+	var requestedIP = req.ClientIP
 	for _, v := range req.Options {
 		if v.Type == layers.DHCPOptRequestIP {
 			requestedIP = net.IP(v.Data)
@@ -228,12 +234,18 @@ func processRequest(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 	resp.YourClientIP = requestedIP
 
 	resp.Options = append(resp.Options, layers.NewDHCPOption(layers.DHCPOptMessageType, []byte{byte(layers.DHCPMsgTypeAck)}))
-	AddOptions(req, resp, *pool, lease, ip)
+	err = AddOptions(req, resp, *pool, lease, ip)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Warn("could not add options to DHCP response")
+		return nil, err
+	}
 
 	lease.IP = requestedIP.String()
 	lease.PoolID = models.NullInt32{NullInt32: sql.NullInt32{Int32: int32(pool.ID), Valid: true}}
 	lease.LastSeenRelay = req.RelayAgentIP.String()
-	if (lease.FirstSeen == time.Time{}) {
+	if (lease.FirstSeen.Equal(time.Time{})) {
 		lease.FirstSeen = time.Now()
 	}
 	lease.LastSeen = time.Now()
@@ -262,9 +274,7 @@ func listMissingOptions(req *layers.DHCPv4, resp *layers.DHCPv4) string {
 	}
 
 	for _, v := range resp.Options {
-		if _, ok := requested[byte(v.Type)]; ok {
-			delete(requested, byte(v.Type))
-		}
+		delete(requested, byte(v.Type))
 	}
 
 	var list []string
@@ -391,7 +401,7 @@ func AddOptions(req *layers.DHCPv4, resp *layers.DHCPv4, pool models.PoolWithAdd
 	}
 
 	// Add the requested options to the response
-	var leaseTime float64 = float64(pool.LeaseTime)
+	var leaseTime = float64(pool.LeaseTime)
 	if leaseTime == 0 {
 		leaseTime = 3600
 	}

@@ -53,7 +53,14 @@ func Ks(key string) func(c *gin.Context) {
 		}
 
 		options := models.GroupOptions{}
-		json.Unmarshal(item.Group.Options, &options)
+		err := json.Unmarshal(item.Group.Options, &options)
+
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"postconfig": "couldn't unmarshal group options",
+			}).Debug(item.IP)
+			return
+		}
 
 		if reimage := db.DB.Model(&item).Where("ip = ?", host).Update("reimage", false); reimage.Error != nil {
 			Error(c, http.StatusInternalServerError, reimage.Error) // 500

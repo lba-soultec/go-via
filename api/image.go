@@ -106,7 +106,11 @@ func CreateImage(conf *config.Config) func(c *gin.Context) {
 			item.Hash = c.PostForm("hash")
 			item.Description = c.PostForm("description")
 
-			os.MkdirAll(filepath.Dir(item.Path), os.ModePerm)
+			err = os.MkdirAll(filepath.Dir(item.Path), os.ModePerm)
+			if err != nil {
+				Error(c, http.StatusInternalServerError, err) // 500
+				return
+			}
 
 			_, err = SaveUploadedFile(file, item.Path)
 			if err != nil {
@@ -127,17 +131,26 @@ func CreateImage(conf *config.Config) func(c *gin.Context) {
 				if err != nil {
 					logrus.Warning(err)
 				}
-				defer f.Close()
+				defer func() {
+					if err := f.Close(); err != nil {
+						logrus.Error(err)
+					}
+				}()
 
 				h := sha256.New()
 				if _, err := io.Copy(h, f); err != nil {
+					Error(c, http.StatusInternalServerError, err) // 500
 					log.Fatal(err)
 				}
 
 				if hex.EncodeToString(h.Sum(nil)) != item.Hash {
 					err := fmt.Errorf("hash was invalid")
 					Error(c, http.StatusBadRequest, err) // 400
-					os.Remove(item.Path)
+					err = os.Remove(item.Path)
+					if err != nil {
+						Error(c, http.StatusInternalServerError, err) // 500
+						logrus.Error(err)
+					}
 					return
 				}
 
@@ -147,7 +160,13 @@ func CreateImage(conf *config.Config) func(c *gin.Context) {
 			if err != nil {
 				log.Fatalf("failed to open file: %s", err)
 			}
-			defer f.Close()
+			defer func() {
+				if err := f.Close(); err != nil {
+					logrus.WithFields(logrus.Fields{
+						"postconfig": "couldn't close uploaded file",
+					}).Error(err)
+				}
+			}()
 
 			//strip the filextension, eg. vmware.iso = vmware
 			fn := strings.TrimSuffix(file.Filename, filepath.Ext(file.Filename))
@@ -213,13 +232,25 @@ func SaveUploadedFile(file *multipart.FileHeader, dst string) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	defer src.Close()
+	defer func() {
+		if err := src.Close(); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"postconfig": "couldn't close uploaded file",
+			}).Error(err)
+		}
+	}()
 
 	out, err := os.Create(dst)
 	if err != nil {
 		return -1, err
 	}
-	defer out.Close()
+	defer func() {
+		if err := out.Close(); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"postconfig": "couldn't close uploaded file",
+			}).Error(err)
+		}
+	}()
 
 	n, err := io.Copy(out, src)
 	return n, err
@@ -341,7 +372,13 @@ func WriteToFile(filename string, data string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"postconfig": "couldn't close private key file",
+			}).Error(err)
+		}
+	}()
 
 	_, err = io.WriteString(file, data)
 	if err != nil {
@@ -368,7 +405,7 @@ func GetInterfaceIpv4Addr(interfaceName string) (addr string, err error) {
 		}
 	}
 	if ipv4Addr == nil {
-		return "", errors.New(fmt.Sprintf("interface %s don't have an ipv4 address\n", interfaceName))
+		return "", fmt.Errorf("interface %s don't have an ipv4 address", interfaceName)
 	}
 	return ipv4Addr.String(), nil
 }

@@ -31,7 +31,11 @@ func ListAddresses(c *gin.Context) {
 		return
 	}
 
-	RetrieveLeases()
+	_, err := RetrieveLeases()
+	if err != nil {
+		Error(c, http.StatusInternalServerError, err) // 500
+		return
+	}
 	c.JSON(http.StatusOK, items) // 200
 }
 
@@ -148,7 +152,7 @@ func CreateAddress(c *gin.Context) {
 
 	// get the pool network info to verify if this ip should be added to the pool.
 	var na models.Pool
-	db.DB.First(&na, "id = ?", item.DeviceAddressForm.PoolID)
+	db.DB.First(&na, "id = ?", item.PoolID)
 
 	cidr := item.IP + "/" + strconv.Itoa(na.Netmask)
 	network := na.NetAddress + "/" + strconv.Itoa(na.Netmask)
@@ -266,8 +270,8 @@ func UpdateAddress(c *gin.Context) {
 	}
 
 	// Mergo doesn't overwrite 0 or false values, force set
-	item.DeviceAddressForm.Reimage = form.Reimage
-	item.DeviceAddressForm.Progress = form.Progress
+	item.Reimage = form.Reimage
+	item.Progress = form.Progress
 
 	// Save it
 	if res := db.DB.Save(&item); res.Error != nil {
