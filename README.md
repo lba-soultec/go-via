@@ -267,8 +267,6 @@ curl -X POST https://localhost:8443/v1/login \
 ![Architecture](architecture/govia-overview.png)
 
 
-
-
 Todo
 -----
 - Currently no requests have been made for features. Please submit any ideas you have.

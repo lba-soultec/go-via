@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main , 'releases/**']
     tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
@@ -134,7 +134,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-go-cli, semantic-release]
+    needs: [build-go-cli]
     steps:
       - uses: actions/checkout@v4
       
