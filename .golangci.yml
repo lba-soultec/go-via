@@ -1,12 +1,19 @@
 run:
   timeout: 5m
+  skip-dirs:
+    - vendor
+    - statik
+    - app/statik
 
 linters:
-  disable:
-    - unused
-    - staticcheck
+  disable-all: true
   enable:
     - gofmt
     - govet
     - ineffassign
     - misspell
+    - errcheck
+
+issues:
+  exclude:
+    - "statik"
