@@ -162,7 +162,6 @@ jobs:
           go-version: '1.24'
       
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
-          args: --disable-all --enable=gofmt,govet,ineffassign,misspell,errcheck --timeout=5m --skip-dirs=vendor,statik,app/statik --out-format=checkstyle
+          version: v2.3.1
