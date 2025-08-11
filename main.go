@@ -31,6 +31,7 @@ import (
 	"github.com/rakyll/statik/fs"
 	"github.com/sirupsen/logrus"
 	_ "gitlab.soultec.ch/soultec/souldeploy/docs"
+	_ "gitlab.soultec.ch/soultec/souldeploy/statik"
 )
 
 var (
