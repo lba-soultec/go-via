@@ -185,7 +185,8 @@ jobs:
           cd web
           npm install --legacy-peer-deps
           npm run build
-      
+          cd ..
+        
       - name: Generate statik files
         run: |
           rm -rf statik
