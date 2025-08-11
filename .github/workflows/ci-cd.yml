@@ -171,6 +171,9 @@ jobs:
       - name: Install statik
         run: go install github.com/rakyll/statik@latest
       
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
+      
       - name: build npm module
         run: |
           cd web
