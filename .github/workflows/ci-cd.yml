@@ -180,6 +180,9 @@ jobs:
       - name: Verify Go dependencies
         run: go mod verify
       
+      - name: Update vendor directory
+        run: go mod vendor
+      
       - name: build npm module
         run: |
           cd web
