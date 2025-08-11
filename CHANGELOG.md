@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/lba-soultec/go-via/compare/v1.0.1...v1.0.2) (2025-08-11)
+
+
+### Bug Fixes
+
+* add releases ([5c751b4](https://github.com/lba-soultec/go-via/commit/5c751b4ecbc6f216fe313ff7eac1f97ddf3adce9))
+* **on:** add create statement ([783811b](https://github.com/lba-soultec/go-via/commit/783811b6beb7e461d1cb11f2c09cadd5e3d02aa6))
+
 ## [1.0.1](https://github.com/lba-soultec/go-via/compare/v1.0.0...v1.0.1) (2025-08-11)
 
 
