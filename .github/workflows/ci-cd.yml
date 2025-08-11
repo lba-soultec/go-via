@@ -161,6 +161,22 @@ jobs:
         with:
           go-version: '1.24'
       
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install statik
+        run: go install github.com/rakyll/statik@latest
+      
+      - name: Generate statik files
+        run: |
+          cd web
+          npm install --legacy-peer-deps
+          npm run build
+          cd ..
+          statik -src ./web/dist/web -f
+      
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
