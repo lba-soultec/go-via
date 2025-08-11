@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/lba-soultec/go-via/compare/v1.0.0...v1.0.1) (2025-08-11)
+
+
+### Bug Fixes
+
+* **trigger:** allow trigger ([413a2fb](https://github.com/lba-soultec/go-via/commit/413a2fbe50633f05f166db04dc1d151a57b7b0aa))
+
 # 1.0.0 (2025-08-11)
 
 
