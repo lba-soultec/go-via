@@ -199,7 +199,7 @@ jobs:
           mkdir -p binaries
           env GOOS=darwin GOARCH=arm64 go build -o binaries/redfish-cli.darwin
           env GOOS=linux GOARCH=amd64 go build -o binaries/redfish-cli
-            env GOOS=windows GOARCH=amd64 go build -o binaries/redfish-cli.exe
+          env GOOS=windows GOARCH=amd64 go build -o binaries/redfish-cli.exe
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
