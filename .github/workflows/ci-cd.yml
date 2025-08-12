@@ -4,7 +4,7 @@ on:
   create:
   push:
     branches: [ main , 'releases/**']
-    tags: [ 'v*' ]
+    tags: [ '*' ]
   pull_request:
     branches: [ main ]
 
@@ -20,7 +20,6 @@ env:
 jobs:
   build-docker:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
       
@@ -59,7 +58,6 @@ jobs:
 
   build-go-cli:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'create' && github.ref_type == 'tag')
     steps:
       - uses: actions/checkout@v4
       
@@ -86,7 +84,6 @@ jobs:
 
   semantic-release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [build-docker, code-quality]
     steps:
       - uses: actions/checkout@v4
@@ -134,7 +131,6 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'create' && github.ref_type == 'tag')
     needs: [build-go-cli]
     steps:
       - uses: actions/checkout@v4
@@ -155,7 +151,6 @@ jobs:
 
   deploy-staging:
     runs-on: [self-hosted, stdeployment-shell]
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'create' && github.ref_type == 'tag')
     needs: [build-docker]
     steps:
       - name: Deploy to staging lab
@@ -177,7 +172,6 @@ jobs:
 
   security-scan:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -199,7 +193,6 @@ jobs:
 
   code-quality:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
         with:
