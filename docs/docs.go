@@ -33,7 +33,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Address"
+                                "$ref": "#/definitions/models.Host"
                             }
                         }
                     },
@@ -63,7 +63,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.DeviceAddressForm"
+                            "$ref": "#/definitions/models.HostAddressForm"
                         }
                     }
                 ],
@@ -71,7 +71,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Address"
+                            "$ref": "#/definitions/models.Host"
                         }
                     },
                     "400": {
@@ -108,7 +108,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Address"
+                            "$ref": "#/definitions/models.Host"
                         }
                     }
                 ],
@@ -116,7 +116,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Address"
+                            "$ref": "#/definitions/models.Host"
                         }
                     },
                     "400": {
@@ -165,7 +165,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Address"
+                            "$ref": "#/definitions/models.Host"
                         }
                     },
                     "400": {
@@ -251,7 +251,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.DeviceAddressForm"
+                            "$ref": "#/definitions/models.HostAddressForm"
                         }
                     }
                 ],
@@ -259,7 +259,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Address"
+                            "$ref": "#/definitions/models.Host"
                         }
                     },
                     "400": {
@@ -1546,7 +1546,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Address"
+                            "$ref": "#/definitions/models.Host"
                         }
                     },
                     "400": {
@@ -1900,152 +1900,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Address": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "deleted_at": {
-                    "type": "string"
-                },
-                "domain": {
-                    "type": "string"
-                },
-                "expires_at": {
-                    "type": "string"
-                },
-                "first_seen": {
-                    "type": "string"
-                },
-                "group": {
-                    "$ref": "#/definitions/models.Group"
-                },
-                "group_id": {
-                    "type": "integer"
-                },
-                "host_fqdn": {
-                    "type": "string"
-                },
-                "hostname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "ilo_api_flavour": {
-                    "type": "string"
-                },
-                "ilo_fqdn": {
-                    "type": "string"
-                },
-                "ilo_ip": {
-                    "type": "string"
-                },
-                "ilo_password": {
-                    "type": "string"
-                },
-                "ilo_port": {
-                    "type": "string"
-                },
-                "ilo_user": {
-                    "type": "string"
-                },
-                "ip": {
-                    "type": "string"
-                },
-                "ks": {
-                    "type": "string"
-                },
-                "last_seen": {
-                    "type": "string"
-                },
-                "last_seen_relay": {
-                    "description": "DHCP parameters",
-                    "type": "string"
-                },
-                "mac": {
-                    "type": "string"
-                },
-                "missing_options": {
-                    "type": "string"
-                },
-                "pool": {
-                    "$ref": "#/definitions/models.Pool"
-                },
-                "pool_id": {
-                    "type": "integer"
-                },
-                "progress": {
-                    "type": "integer"
-                },
-                "progresstext": {
-                    "type": "string"
-                },
-                "reimage": {
-                    "type": "boolean"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.DeviceAddressForm": {
-            "type": "object",
-            "properties": {
-                "domain": {
-                    "type": "string"
-                },
-                "group_id": {
-                    "type": "integer"
-                },
-                "host_fqdn": {
-                    "type": "string"
-                },
-                "hostname": {
-                    "type": "string"
-                },
-                "ilo_api_flavour": {
-                    "type": "string"
-                },
-                "ilo_fqdn": {
-                    "type": "string"
-                },
-                "ilo_ip": {
-                    "type": "string"
-                },
-                "ilo_password": {
-                    "type": "string"
-                },
-                "ilo_port": {
-                    "type": "string"
-                },
-                "ilo_user": {
-                    "type": "string"
-                },
-                "ip": {
-                    "type": "string"
-                },
-                "ks": {
-                    "type": "string"
-                },
-                "mac": {
-                    "type": "string"
-                },
-                "pool_id": {
-                    "type": "integer"
-                },
-                "progress": {
-                    "type": "integer"
-                },
-                "progresstext": {
-                    "type": "string"
-                },
-                "reimage": {
-                    "type": "boolean"
-                }
-            }
-        },
         "models.DeviceClass": {
             "type": "object",
             "properties": {
@@ -2086,7 +1940,7 @@ const docTemplate = `{
                 "address": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Address"
+                        "$ref": "#/definitions/models.Host"
                     }
                 },
                 "bootdisk": {
@@ -2195,6 +2049,152 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Host": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "first_seen": {
+                    "type": "string"
+                },
+                "group": {
+                    "$ref": "#/definitions/models.Group"
+                },
+                "group_id": {
+                    "type": "integer"
+                },
+                "host_fqdn": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ilo_api_flavour": {
+                    "type": "string"
+                },
+                "ilo_fqdn": {
+                    "type": "string"
+                },
+                "ilo_ip": {
+                    "type": "string"
+                },
+                "ilo_password": {
+                    "type": "string"
+                },
+                "ilo_port": {
+                    "type": "string"
+                },
+                "ilo_user": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "ks": {
+                    "type": "string"
+                },
+                "last_seen": {
+                    "type": "string"
+                },
+                "last_seen_relay": {
+                    "description": "DHCP parameters",
+                    "type": "string"
+                },
+                "mac": {
+                    "type": "string"
+                },
+                "missing_options": {
+                    "type": "string"
+                },
+                "pool": {
+                    "$ref": "#/definitions/models.Pool"
+                },
+                "pool_id": {
+                    "type": "integer"
+                },
+                "progress": {
+                    "type": "integer"
+                },
+                "progresstext": {
+                    "type": "string"
+                },
+                "reimage": {
+                    "type": "boolean"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.HostAddressForm": {
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "group_id": {
+                    "type": "integer"
+                },
+                "host_fqdn": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "ilo_api_flavour": {
+                    "type": "string"
+                },
+                "ilo_fqdn": {
+                    "type": "string"
+                },
+                "ilo_ip": {
+                    "type": "string"
+                },
+                "ilo_password": {
+                    "type": "string"
+                },
+                "ilo_port": {
+                    "type": "string"
+                },
+                "ilo_user": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "ks": {
+                    "type": "string"
+                },
+                "mac": {
+                    "type": "string"
+                },
+                "pool_id": {
+                    "type": "integer"
+                },
+                "progress": {
+                    "type": "integer"
+                },
+                "progresstext": {
+                    "type": "string"
+                },
+                "reimage": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.Image": {
             "type": "object",
             "properties": {
@@ -2256,7 +2256,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "address": {
-                    "$ref": "#/definitions/models.Address"
+                    "$ref": "#/definitions/models.Host"
                 },
                 "address_id": {
                     "type": "integer"

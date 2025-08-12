@@ -37,7 +37,7 @@ type Pool struct {
 
 type PoolWithAddresses struct {
 	Pool
-	Addresses []Address `json:"address,omitempty" gorm:"foreignkey:PoolID"`
+	Addresses []Host `json:"address,omitempty" gorm:"foreignkey:PoolID"`
 }
 
 func (p *Pool) BeforeCreate(tx *gorm.DB) error {
@@ -139,7 +139,7 @@ func (p *PoolWithAddresses) IsAvailableExcept(ip net.IP, exclude string) error {
 	}
 
 	// Check reservations as well
-	var reservations []Address
+	var reservations []Host
 	db.DB.Where("ip = ? AND reimage", s).Find(&reservations)
 	for _, v := range reservations {
 		if v.IP == s && v.Mac != exclude {

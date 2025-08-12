@@ -151,7 +151,7 @@ func CreatePool(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param  id path int true "Pool ID"
-// @Success 200 {object} models.Address
+// @Success 200 {object} models.Host
 // @Failure 400 {object} models.APIError
 // @Failure 404 {object} models.APIError
 // @Failure 500 {object} models.APIError
@@ -180,8 +180,8 @@ func GetNextFreeIP(c *gin.Context) {
 		return
 	}
 
-	resp := models.Address{
-		DeviceAddressForm: models.DeviceAddressForm{
+	resp := models.Host{
+		HostAddressForm: models.HostAddressForm{
 			IP: ip.String(),
 		},
 	}

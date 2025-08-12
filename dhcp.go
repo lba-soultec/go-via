@@ -46,7 +46,7 @@ func processPacket(t layers.DHCPMsgType, req *layers.DHCPv4, sourceNet net.IP, i
 
 func processDiscover(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (resp *layers.DHCPv4, err error) {
 	// Find all reimage addresses that is not yet assigned a pool
-	var reimageAddresses []models.Address
+	var reimageAddresses []models.Host
 	if res := db.DB.Where("pool_id IS NULL").Where("reimage = 1").Find(&reimageAddresses); res.Error != nil {
 		if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, res.Error
@@ -63,7 +63,7 @@ func processDiscover(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (resp *lay
 
 	// Search in the list for our mac address
 	var leaseIP net.IP
-	var lease *models.Address
+	var lease *models.Host
 	for _, v := range addresses {
 		// Make sure the reimage IP is within the pool
 		parsedIp := net.ParseIP(v.IP)
@@ -111,7 +111,7 @@ func processDiscover(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (resp *lay
 		return nil, err
 	}
 
-	//req *layers.DHCPv4, resp *layers.DHCPv4, pool models.PoolWithAddresses, lease *models.Address, ip net.IP
+	//req *layers.DHCPv4, resp *layers.DHCPv4, pool models.PoolWithAddresses, lease *models.Host, ip net.IP
 
 	return resp, nil
 }
@@ -122,7 +122,7 @@ func processRequest(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 	}*/
 
 	// Find all reimage addresses that is not yet assigned a pool
-	var reimageAddresses []models.Address
+	var reimageAddresses []models.Host
 	if res := db.DB.Where("pool_id IS NULL").Where("reimage = 1").Find(&reimageAddresses); res.Error != nil {
 		if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, res.Error
@@ -157,7 +157,7 @@ func processRequest(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 	}
 
 	// Try to find the lease in our address list
-	var lease *models.Address
+	var lease *models.Host
 	for _, v := range addresses {
 		// Check so the IP is part of the pool
 		parsedIp := net.ParseIP(v.IP)
@@ -177,7 +177,7 @@ func processRequest(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 		}
 
 		if v.Mac == req.ClientHWAddr.String() {
-			foundLease := models.Address(v)
+			foundLease := models.Host(v)
 			lease = &foundLease
 		}
 	}
@@ -215,8 +215,8 @@ func processRequest(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 
 	// Its a new lease!
 	if lease == nil {
-		lease = &models.Address{
-			DeviceAddressForm: models.DeviceAddressForm{
+		lease = &models.Host{
+			HostAddressForm: models.HostAddressForm{
 				Mac:      req.ClientHWAddr.String(),
 				Hostname: "-",
 				Reimage:  false,
@@ -301,7 +301,7 @@ func processDecline(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 	}
 
 	// Try to find the lease in our address history
-	var lease *models.Address
+	var lease *models.Host
 	for _, v := range pool.Addresses {
 		if v.IP == requestedIP.To4().String() {
 			lease = &v
@@ -310,8 +310,8 @@ func processDecline(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 
 	// Its an unknown device
 	if lease == nil {
-		lease = &models.Address{
-			DeviceAddressForm: models.DeviceAddressForm{
+		lease = &models.Host{
+			HostAddressForm: models.HostAddressForm{
 				IP:       requestedIP.String(),
 				Hostname: "-",
 				Reimage:  false,
@@ -335,7 +335,7 @@ func processDecline(req *layers.DHCPv4, sourceNet net.IP, ip net.IP) (*layers.DH
 }
 
 // AddOptions will try to add all requested options and the manually specified ones to the response
-func AddOptions(req *layers.DHCPv4, resp *layers.DHCPv4, pool models.PoolWithAddresses, lease *models.Address, ip net.IP) error {
+func AddOptions(req *layers.DHCPv4, resp *layers.DHCPv4, pool models.PoolWithAddresses, lease *models.Host, ip net.IP) error {
 	var options []models.Option
 	var leaseID interface{}
 

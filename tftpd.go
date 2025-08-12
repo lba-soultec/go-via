@@ -47,7 +47,7 @@ func readHandler(conf *config.Config) func(string, io.ReaderFrom) error {
 		ip, _, _ := net.SplitHostPort(raddr.String())
 
 		//get the object that correlates with the ip
-		var address models.Address
+		var address models.Host
 		db.DB.Preload(clause.Associations).First(&address, "ip = ?", ip)
 
 		//get the image info that correlates with the pool the ip is in
@@ -185,7 +185,7 @@ func crypto64Path(imagePath string) (string, error) {
 
 }
 
-func serveBootCfg(filename string, address models.Address, image models.Image, rf io.ReaderFrom, conf *config.Config) {
+func serveBootCfg(filename string, address models.Host, image models.Image, rf io.ReaderFrom, conf *config.Config) {
 	//if the filename is boot.cfg, or /boot.cfg, we serve the boot cfg that belongs to that build. unfortunately, it seems boot.cfg or /boot.cfg varies in builds.
 
 	// get the requesting ip-address and our source address

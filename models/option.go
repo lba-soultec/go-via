@@ -24,8 +24,8 @@ type Option struct {
 
 	OptionForm
 
-	Pool    *Pool    `json:"pool,omitempty" gorm:"foreignkey:PoolID"`
-	Address *Address `json:"address,omitempty" gorm:"foreignkey:AddressID"`
+	Pool    *Pool `json:"pool,omitempty" gorm:"foreignkey:PoolID"`
+	Address *Host `json:"address,omitempty" gorm:"foreignkey:AddressID"`
 
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`

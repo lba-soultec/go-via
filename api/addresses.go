@@ -21,11 +21,11 @@ import (
 // @Tags addresses
 // @Accept  json
 // @Produce  json
-// @Success 200 {array} models.Address
+// @Success 200 {array} models.Host
 // @Failure 500 {object} models.APIError
 // @Router /addresses [get]
 func ListAddresses(c *gin.Context) {
-	var items []models.Address
+	var items []models.Host
 	if res := db.DB.Preload("Pool").Find(&items); res.Error != nil {
 		Error(c, http.StatusInternalServerError, res.Error) // 500
 		return
@@ -39,8 +39,8 @@ func ListAddresses(c *gin.Context) {
 	c.JSON(http.StatusOK, items) // 200
 }
 
-func RetrieveLeases() ([]models.Address, error) {
-	var leases []models.Address
+func RetrieveLeases() ([]models.Host, error) {
+	var leases []models.Host
 	if res := db.DB.Where("expires > datetime('now', 'utc')").Find(&leases); res.Error != nil {
 		if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, res.Error
@@ -65,7 +65,7 @@ func RetrieveLeases() ([]models.Address, error) {
 // @Accept  json
 // @Produce  json
 // @Param  id path int true "Address ID"
-// @Success 200 {object} models.Address
+// @Success 200 {object} models.Host
 // @Failure 400 {object} models.APIError
 // @Failure 404 {object} models.APIError
 // @Failure 500 {object} models.APIError
@@ -78,7 +78,7 @@ func GetAddress(c *gin.Context) {
 	}
 
 	// Load the item
-	var item models.Address
+	var item models.Host
 	if res := db.DB.Preload("Pool").First(&item, id); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			Error(c, http.StatusNotFound, fmt.Errorf("not found")) // 404
@@ -96,8 +96,8 @@ func GetAddress(c *gin.Context) {
 // @Tags addresses
 // @Accept  json
 // @Produce  json
-// @Param item body models.Address true "Fields to search for"
-// @Success 200 {object} models.Address
+// @Param item body models.Host true "Fields to search for"
+// @Success 200 {object} models.Host
 // @Failure 400 {object} models.APIError
 // @Failure 404 {object} models.APIError
 // @Failure 500 {object} models.APIError
@@ -117,7 +117,7 @@ func SearchAddress(c *gin.Context) {
 	}
 
 	// Load the item
-	var item models.Address
+	var item models.Host
 	if res := query.Preload("Pool").First(&item); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			Error(c, http.StatusNotFound, fmt.Errorf("not found")) // 404
@@ -135,20 +135,20 @@ func SearchAddress(c *gin.Context) {
 // @Tags addresses
 // @Accept  json
 // @Produce  json
-// @Param item body  models.DeviceAddressForm true "Add ip address"
-// @Success 200 {object} models.Address
+// @Param item body  models.HostAddressForm true "Add ip address"
+// @Success 200 {object} models.Host
 // @Failure 400 {object} models.APIError
 // @Failure 500 {object} models.APIError
 // @Router /addresses [post]
 func CreateAddress(c *gin.Context) {
-	var form models.DeviceAddressForm
+	var form models.HostAddressForm
 
 	if err := c.ShouldBind(&form); err != nil {
 		Error(c, http.StatusBadRequest, err) // 400
 		return
 	}
 
-	item := models.Address{DeviceAddressForm: form}
+	item := models.Host{HostAddressForm: form}
 
 	// get the pool network info to verify if this ip should be added to the pool.
 	var na models.Pool
@@ -233,8 +233,8 @@ func CreateAddress(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param  id path int true "Address ID"
-// @Param  item body  models.DeviceAddressForm true "Update an ip address"
-// @Success 200 {object} models.Address
+// @Param  item body  models.HostAddressForm true "Update an ip address"
+// @Success 200 {object} models.Host
 // @Failure 400 {object} models.APIError
 // @Failure 404 {object} models.APIError
 // @Failure 500 {object} models.APIError
@@ -247,14 +247,14 @@ func UpdateAddress(c *gin.Context) {
 	}
 
 	// Load the form data
-	var form models.DeviceAddressForm
+	var form models.HostAddressForm
 	if err := c.ShouldBind(&form); err != nil {
 		Error(c, http.StatusBadRequest, err) // 400
 		return
 	}
 
 	// Load the item
-	var item models.Address
+	var item models.Host
 	if res := db.DB.First(&item, id); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			Error(c, http.StatusNotFound, fmt.Errorf("not found")) // 404
@@ -265,7 +265,7 @@ func UpdateAddress(c *gin.Context) {
 	}
 
 	// Merge the item and the form data
-	if err := mergo.Merge(&item, models.Address{DeviceAddressForm: form}, mergo.WithOverride); err != nil {
+	if err := mergo.Merge(&item, models.Host{HostAddressForm: form}, mergo.WithOverride); err != nil {
 		Error(c, http.StatusInternalServerError, err) // 500
 	}
 
@@ -306,7 +306,7 @@ func DeleteAddress(c *gin.Context) {
 	}
 
 	// Load the item
-	var item models.Address
+	var item models.Host
 	if res := db.DB.First(&item, id); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			Error(c, http.StatusNotFound, fmt.Errorf("not found")) // 404

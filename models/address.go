@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type DeviceAddressForm struct {
+type HostAddressForm struct {
 	IP            string    `json:"ip" gorm:"type:varchar(15);not null;index:uniqIp,unique"`
 	IloIP         string    `json:"ilo_ip" gorm:"type:varchar(15);index:uniqIp,unique"`
 	IloUser       string    `json:"ilo_user" gorm:"type:varchar(255)"`
@@ -24,13 +24,13 @@ type DeviceAddressForm struct {
 	Ks            string    `json:"ks" gorm:"type:text"`
 }
 
-type Address struct {
+type Host struct {
 	ID int `json:"id" gorm:"primary_key"`
 
 	Pool  Pool  `json:"pool" gorm:"foreignkey:PoolID"`
 	Group Group `json:"group" gorm:"foreignkey:GroupID"`
 
-	DeviceAddressForm
+	HostAddressForm
 
 	FirstSeen time.Time `json:"first_seen"`
 	LastSeen  time.Time `json:"last_seen"`
