@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/lba-soultec/go-via/compare/v1.0.4...v1.0.5) (2025-08-12)
+
+
+### Bug Fixes
+
+* **ns:** add ns ([62427e3](https://github.com/lba-soultec/go-via/commit/62427e3d9d6d618cfefaa0cc023ab5769bc42918))
+
 ## [1.0.4](https://github.com/lba-soultec/go-via/compare/v1.0.3...v1.0.4) (2025-08-12)
 
 
