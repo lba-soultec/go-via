@@ -1,12 +1,11 @@
 name: CI/CD Pipeline
 
 on:
-  create:
   push:
-    branches: [ main , 'releases/**']
-    tags: [ '*' ]
+    branches: ['**']        # all branches so feature branches trigger build jobs
+    tags: ['*']             # tag pushes trigger full pipeline + release
   pull_request:
-    branches: [ main ]
+    branches: [ main ]      # PRs targeting main (build jobs only due to conditions below)
 
 permissions:
   contents: write
