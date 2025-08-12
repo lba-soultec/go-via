@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: souldeploy
-        image: registry.soultec.lab/souldeploy/souldeploy:v1.0.3
+        image: ghcr.io/lba-soultec/go-via:v1.0.3
         imagePullPolicy: IfNotPresent
         args:
           - -file 
