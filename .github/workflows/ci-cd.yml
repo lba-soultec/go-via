@@ -262,6 +262,8 @@ jobs:
       with:
         input: deploy/kustomization.tmpl
         output: deploy/kustomization.yaml
+    - name: Verify kustomization.yaml
+      run: cat ./deploy/kustomization.yaml
     # Runs Kustomize to create manifest files
     - name: Bake deployment
       uses: azure/k8s-bake@v2
