@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/lba-soultec/go-via/compare/v1.0.3...v1.0.4) (2025-08-12)
+
+
+### Bug Fixes
+
+* **cicd:** add true bool ([151d7d9](https://github.com/lba-soultec/go-via/commit/151d7d9098a09b777802510dc5f1d5a8473fd7a3))
+
 ## [1.0.3](https://github.com/lba-soultec/go-via/compare/v1.0.2...v1.0.3) (2025-08-12)
 
 
