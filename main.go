@@ -287,15 +287,15 @@ func main() {
 		{
 			hostConfig.GET("", api.HostConfig)
 		}
-		hosts := v1.Group("/hosts")
+		ilohosts := v1.Group("/ilohosts")
 		{
-			hosts.POST(":id/setvlanID", api.SetVLANID)     // Set VLAN ID
-			hosts.POST(":id/start", api.StartHost)         // Start the host
-			hosts.POST(":id/shutdown", api.ShutdownHost)   // Shutdown the host
-			hosts.POST(":id/reboot", api.RebootHost)       // Reboot the host
-			hosts.POST(":id/onetimeboot", api.OneTimeBoot) // Set one time boot
+			ilohosts.POST(":id/setvlanID", api.SetVLANID)      // Set VLAN ID
+			ilohosts.POST(":id/start", api.StartIloHost)       // Start the host
+			ilohosts.POST(":id/shutdown", api.ShutdownIloHost) // Shutdown the host
+			ilohosts.POST(":id/reboot", api.RebootIloHost)     // Reboot the host
+			ilohosts.POST(":id/onetimeboot", api.OneTimeBoot)  // Set one time boot
 
-			hosts.POST("/checkilo", api.CheckIP) // Check ILO IP
+			ilohosts.POST("/checkilo", api.CheckIP) // Check ILO IP
 		}
 		v1.GET("log", logServer.Handle)
 

@@ -12,7 +12,7 @@ import (
 	"gitlab.soultec.ch/soultec/souldeploy/ilomapi"
 )
 
-func StartHost(c *gin.Context) {
+func StartIloHost(c *gin.Context) {
 	// Log that the method has been called
 	logrus.Debug("Received start request")
 	// Extract query parameters and create API client
@@ -122,7 +122,7 @@ func createAPIClientFromParams(c *gin.Context) (ilomapi.IlomApi, map[string]stri
 	return api, params, nil
 }
 
-func ShutdownHost(c *gin.Context) {
+func ShutdownIloHost(c *gin.Context) {
 
 	// Log that the method has been called
 	logrus.Debug("Received shutdown request")
@@ -161,7 +161,7 @@ func ShutdownHost(c *gin.Context) {
 
 }
 
-func RebootHost(c *gin.Context) {
+func RebootIloHost(c *gin.Context) {
 	// Log that the method has been called
 	logrus.Debug("Received reboot request")
 	// Extract query parameters and create API client
