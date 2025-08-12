@@ -5,6 +5,15 @@
 
 * **cicd:** all branches ([6ca8303](https://github.com/lba-soultec/go-via/commit/6ca83033e9e7dd973c7999b6a7d6a7d4d0314fc5))
 * **release:** tag the commit and proceed ([5d0fceb](https://github.com/lba-soultec/go-via/commit/5d0fcebb406997f187f61aaaa871f0dabeb70d66))
+* **trigger:** add trigger for build on new runners ([4fe9e68](https://github.com/lba-soultec/go-via/commit/4fe9e68d620cc2bc0734ba06d5ba59d0c5ed6fb8))
+
+## [1.0.2](https://github.com/lba-soultec/go-via/compare/v1.0.1...v1.0.2) (2025-08-12)
+
+
+### Bug Fixes
+
+* **cicd:** all branches ([6ca8303](https://github.com/lba-soultec/go-via/commit/6ca83033e9e7dd973c7999b6a7d6a7d4d0314fc5))
+* **release:** tag the commit and proceed ([5d0fceb](https://github.com/lba-soultec/go-via/commit/5d0fcebb406997f187f61aaaa871f0dabeb70d66))
 
 ## [1.0.1](https://github.com/lba-soultec/go-via/compare/v1.0.0...v1.0.1) (2025-08-12)
 
