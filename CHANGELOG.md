@@ -1,3 +1,11 @@
+## [1.0.6](https://github.com/lba-soultec/go-via/compare/v1.0.5...v1.0.6) (2025-08-12)
+
+
+### Bug Fixes
+
+* **images:** update image registry to ghcr.io ([6423c01](https://github.com/lba-soultec/go-via/commit/6423c018c79b3dd53d2e60f793742d9c6a6bf71e))
+* **image:** use public image ([01abe3a](https://github.com/lba-soultec/go-via/commit/01abe3a775f7657d43c23890ecff50a19528ce73))
+
 ## [1.0.5](https://github.com/lba-soultec/go-via/compare/v1.0.4...v1.0.5) (2025-08-12)
 
 
