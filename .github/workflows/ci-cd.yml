@@ -274,6 +274,7 @@ jobs:
       with:
         action: deploy
         manifests: ${{ steps.bake.outputs.manifestsBundle }}
+        namespace: souldeploy
         imagepullsecrets: |
             demo-k8s-secret
 
