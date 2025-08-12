@@ -24,3 +24,5 @@ secret
 secret/*
 statik
 statik/statik.go
+images
+images/

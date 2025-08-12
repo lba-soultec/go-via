@@ -47,19 +47,19 @@ func readHandler(conf *config.Config) func(string, io.ReaderFrom) error {
 		ip, _, _ := net.SplitHostPort(raddr.String())
 
 		//get the object that correlates with the ip
-		var address models.Host
-		db.DB.Preload(clause.Associations).First(&address, "ip = ?", ip)
+		var host models.Host
+		db.DB.Preload(clause.Associations).First(&host, "ip = ?", ip)
 
 		//get the image info that correlates with the pool the ip is in
 		var image models.Image
-		db.DB.First(&image, "id = ?", address.Group.ImageID)
+		db.DB.First(&image, "id = ?", host.Group.ImageID)
 
 		logrus.WithFields(logrus.Fields{
-			"raddr":     raddr,
-			"laddr":     laddr,
-			"filename":  filename,
-			"imageid":   image.ID,
-			"addressid": address.ID,
+			"raddr":    raddr,
+			"laddr":    laddr,
+			"filename": filename,
+			"imageid":  image.ID,
+			"hostid":   host.ID,
 		}).Debug("tftpd")
 
 		//if the filename is mboot.efi, we hijack it and serve the mboot.efi file that is part of that specific image, this guarantees that you always get an mboot file that works for the build
@@ -69,42 +69,42 @@ func readHandler(conf *config.Config) func(string, io.ReaderFrom) error {
 				ip: "requesting mboot.efi",
 			}).Info("tftpd")
 			logrus.WithFields(logrus.Fields{
-				"id":           address.ID,
+				"id":           host.ID,
 				"percentage":   10,
 				"progresstext": "mboot.efi",
 			}).Info("progress")
 			filename, _ = mbootPath(image.Path)
-			address.Progress = 10
-			address.Progresstext = "mboot.efi"
-			db.DB.Save(&address)
+			host.Progress = 10
+			host.Progresstext = "mboot.efi"
+			db.DB.Save(&host)
 		case "crypto64.efi":
 			logrus.WithFields(logrus.Fields{
 				ip: "requesting crypto64.efi",
 			}).Info("tftpd")
 			logrus.WithFields(logrus.Fields{
-				"id":           address.ID,
+				"id":           host.ID,
 				"percentage":   12,
 				"progresstext": "crypto64.efi",
 			}).Info("progress")
 			filename, _ = crypto64Path(image.Path)
-			address.Progress = 12
-			address.Progresstext = "crypto64.efi"
-			db.DB.Save(&address)
+			host.Progress = 12
+			host.Progresstext = "crypto64.efi"
+			db.DB.Save(&host)
 		case "boot.cfg":
-			serveBootCfg(filename, address, image, rf, conf)
+			serveBootCfg(filename, host, image, rf, conf)
 		case "/boot.cfg":
-			serveBootCfg(filename, address, image, rf, conf)
+			serveBootCfg(filename, host, image, rf, conf)
 		default:
-			//if no case matches, chroot to /tftp
-			if _, err := os.Stat("tftp/" + filename); err == nil {
-				filename = "tftp/" + filename
+			//if no case matches, chroot to /images
+			if _, err := os.Stat("images/" + filename); err == nil {
+				filename = "images/" + filename
 				logrus.WithFields(logrus.Fields{
 					"lowercase file": filename,
 				}).Debug("tftpd")
 			} else {
 				dir, file := path.Split(filename)
 				upperfile := strings.ToUpper(string(file))
-				filename = "tftp/" + dir + upperfile
+				filename = "images/" + dir + upperfile
 				logrus.WithFields(logrus.Fields{
 					"uppercase file": filename,
 				}).Debug("tftpd")
@@ -135,9 +135,9 @@ func readHandler(conf *config.Config) func(string, io.ReaderFrom) error {
 			return err
 		}
 		logrus.WithFields(logrus.Fields{
-			"id":    address.ID,
-			"ip":    address.IP,
-			"host":  address.Hostname,
+			"id":    host.ID,
+			"ip":    host.IP,
+			"host":  host.Hostname,
 			"file":  filename,
 			"bytes": n,
 		}).Info("tftpd")
@@ -185,7 +185,7 @@ func crypto64Path(imagePath string) (string, error) {
 
 }
 
-func serveBootCfg(filename string, address models.Host, image models.Image, rf io.ReaderFrom, conf *config.Config) {
+func serveBootCfg(filename string, host models.Host, image models.Image, rf io.ReaderFrom, conf *config.Config) {
 	//if the filename is boot.cfg, or /boot.cfg, we serve the boot cfg that belongs to that build. unfortunately, it seems boot.cfg or /boot.cfg varies in builds.
 
 	// get the requesting ip-address and our source address
@@ -200,13 +200,13 @@ func serveBootCfg(filename string, address models.Host, image models.Image, rf i
 		ip: "requesting boot.cfg",
 	}).Info("tftpd")
 	logrus.WithFields(logrus.Fields{
-		"id":           address.ID,
+		"id":           host.ID,
 		"percentage":   15,
 		"progresstext": "installation",
 	}).Info("progress")
-	address.Progress = 15
-	address.Progresstext = "installation"
-	db.DB.Save(&address)
+	host.Progress = 15
+	host.Progresstext = "installation"
+	db.DB.Save(&host)
 
 	bc, err := os.ReadFile(image.Path + "/BOOT.CFG")
 	if err != nil {
@@ -224,23 +224,23 @@ func serveBootCfg(filename string, address models.Host, image models.Image, rf i
 	bc = re.ReplaceAllLiteral(bc, append(o, []byte(" ks=https://"+laddr.String()+":"+strconv.Itoa(conf.Port)+"/ks.cfg")...))
 
 	// append the mac address of the hardware interface to ensure ks.cfg request comes from the right interface, along with ip, netmask and gateway.
-	nm := net.CIDRMask(address.Pool.Netmask, 32)
+	nm := net.CIDRMask(host.Pool.Netmask, 32)
 	netmask := ipv4MaskString(nm)
 
 	re = regexp.MustCompile("kernelopt=.*")
 	o = re.Find(bc)
-	bc = re.ReplaceAllLiteral(bc, append(o, []byte(" netdevice="+address.Mac+" ip="+address.IP+" netmask="+netmask+" gateway="+address.Pool.Gateway)...))
+	bc = re.ReplaceAllLiteral(bc, append(o, []byte(" netdevice="+host.Mac+" ip="+host.IP+" netmask="+netmask+" gateway="+host.Pool.Gateway)...))
 
 	// if vlan is configured for the group, append the vlan to kernelopts
-	if address.Group.Vlan != "" {
+	if host.Group.Vlan != "" {
 		re = regexp.MustCompile("kernelopt=.*")
 		o = re.Find(bc)
-		bc = re.ReplaceAllLiteral(bc, append(o, []byte(" vlanid="+address.Group.Vlan)...))
+		bc = re.ReplaceAllLiteral(bc, append(o, []byte(" vlanid="+host.Group.Vlan)...))
 	}
 
 	// load options from the group
 	options := models.GroupOptions{}
-	err = json.Unmarshal(address.Group.Options, &options)
+	err = json.Unmarshal(host.Group.Options, &options)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"err": err,

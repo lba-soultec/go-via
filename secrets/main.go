@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-
 	"os"
 
 	"github.com/sirupsen/logrus"
