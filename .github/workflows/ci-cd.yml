@@ -234,26 +234,45 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-staging:
-    runs-on: [arc-runner-set]
+    runs-on: arc-runner-set
     needs: [build-docker, semantic-release]
     if: needs.semantic-release.outputs.released == 'true'
     env:
       VERSION: ${{ needs.semantic-release.outputs.version }}
     steps:
-      - name: Deploy to staging lab
-        run: |
-          export IMAGE_PATH=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
-          
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-          
-          # Wait for the image to be available
-          until docker pull $IMAGE_PATH; do 
-            echo "Waiting for image $IMAGE_PATH to be available..."
-            sleep 30
-          done
-          
-          VERSION=${VERSION} envsubst < /srv/stag/govia/docker/docker-compose.tmpl > /srv/stag/govia/docker/docker-compose.yaml
-          sudo docker-compose -f /srv/stag/govia/docker/docker-compose.yaml up -d
+    - uses: actions/checkout@v4
+    - uses: azure/setup-kubectl@v4
+    - uses: Azure/k8s-set-context@v4
+      with:
+        kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+    - uses: Azure/k8s-create-secret@v4
+      with:
+        container-registry-url: ${{ env.REGISTRY }}
+        container-registry-username: ${{ github.actor }}
+        container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+        # Ensure REGISTRY_USERNAME and REGISTRY_PASSWORD are set in your repository/organization secrets.
+        secret-name: demo-k8s-secret
+    - uses: danielr1996/envsubst-action@1.0.0
+      env:
+          VERSION: ${{ env.VERSION }}
+      with:
+        input: deploy/kustomization.tmpl
+        output: deploy/kustomization.yaml
+    # Runs Kustomize to create manifest files
+    - name: Bake deployment
+      uses: azure/k8s-bake@v2
+      with:
+        renderEngine: "kustomize"
+        kustomizationPath: ./deploy
+        kubectl-version: latest
+      id: bake        
+    - uses: Azure/k8s-deploy@v4
+      with:
+        action: deploy
+        manifests: ${{ steps.bake.outputs.manifestsBundle }}
+        imagepullsecrets: |
+            demo-k8s-secret
 
   security-scan:
     runs-on: ubuntu-latest
