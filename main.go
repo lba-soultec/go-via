@@ -9,13 +9,13 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"gitlab.soultec.ch/soultec/souldeploy/api"
-	"gitlab.soultec.ch/soultec/souldeploy/config"
-	ca "gitlab.soultec.ch/soultec/souldeploy/crypto"
-	"gitlab.soultec.ch/soultec/souldeploy/db"
-	"gitlab.soultec.ch/soultec/souldeploy/models"
-	"gitlab.soultec.ch/soultec/souldeploy/secrets"
-	"gitlab.soultec.ch/soultec/souldeploy/websockets"
+	"github.com/maxiepax/go-via/api"
+	"github.com/maxiepax/go-via/config"
+	ca "github.com/maxiepax/go-via/crypto"
+	"github.com/maxiepax/go-via/db"
+	"github.com/maxiepax/go-via/models"
+	"github.com/maxiepax/go-via/secrets"
+	"github.com/maxiepax/go-via/websockets"
 
 	"github.com/gin-contrib/static"
 
@@ -25,10 +25,10 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	_ "github.com/maxiepax/go-via/docs"
+	_ "github.com/maxiepax/go-via/statik"
 	"github.com/rakyll/statik/fs"
 	"github.com/sirupsen/logrus"
-	_ "gitlab.soultec.ch/soultec/souldeploy/docs"
-	_ "gitlab.soultec.ch/soultec/souldeploy/statik"
 )
 
 var (
@@ -79,16 +79,6 @@ func main() {
 
 	// load secrets key
 	key := secrets.Init()
-
-	// DHCPd
-	logrus.Info("Check Config for DHCP", conf, conf.DisableDhcp)
-	if !conf.DisableDhcp {
-		logrus.Info("Starting DHCP")
-		for _, v := range conf.Network.Interfaces {
-			logrus.Infof("Starting DHCP on %s", v)
-			go serve(v)
-		}
-	}
 
 	// TFTPd
 	go TFTPd(conf)

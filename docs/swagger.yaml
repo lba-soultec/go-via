@@ -31,10 +31,6 @@ definitions:
     type: object
   models.Group:
     properties:
-      address:
-        items:
-          $ref: '#/definitions/models.Host'
-        type: array
       bootdisk:
         type: string
       callbackurl:
@@ -43,8 +39,16 @@ definitions:
         type: string
       deleted_at:
         type: string
+      device:
+        type: string
       dns:
         type: string
+      gateway:
+        type: string
+      host:
+        items:
+          $ref: '#/definitions/models.Host'
+        type: array
       id:
         type: integer
       image_id:
@@ -52,6 +56,8 @@ definitions:
       ks:
         type: string
       name:
+        type: string
+      netmask:
         type: string
       ntp:
         type: string
@@ -82,13 +88,19 @@ definitions:
         type: string
       callbackurl:
         type: string
+      device:
+        type: string
       dns:
+        type: string
+      gateway:
         type: string
       image_id:
         type: integer
       ks:
         type: string
       name:
+        type: string
+      netmask:
         type: string
       ntp:
         type: string
@@ -165,7 +177,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  models.HostAddressForm:
+  models.HostForm:
     properties:
       domain:
         type: string
@@ -238,10 +250,6 @@ definitions:
     type: object
   models.Option:
     properties:
-      address:
-        $ref: '#/definitions/models.Host'
-      address_id:
-        type: integer
       created_at:
         type: string
       data:
@@ -249,6 +257,10 @@ definitions:
       deleted_at:
         type: string
       device_class_id:
+        type: integer
+      host:
+        $ref: '#/definitions/models.Host'
+      host_id:
         type: integer
       id:
         type: integer
@@ -269,11 +281,11 @@ definitions:
     type: object
   models.OptionForm:
     properties:
-      address_id:
-        type: integer
       data:
         type: string
       device_class_id:
+        type: integer
+      host_id:
         type: integer
       opcode:
         type: integer
@@ -288,13 +300,9 @@ definitions:
     type: object
   models.Pool:
     properties:
-      authorized_vlan:
-        type: integer
       created_at:
         type: string
       deleted_at:
-        type: string
-      end_address:
         type: string
       gateway:
         type: string
@@ -302,8 +310,6 @@ definitions:
         type: integer
       lease_time:
         type: integer
-      managed_reference:
-        type: string
       name:
         type: string
       net_address:
@@ -312,45 +318,31 @@ definitions:
         type: integer
       only_serve_reimage:
         type: boolean
-      start_address:
-        type: string
       updated_at:
         type: string
     required:
-    - end_address
     - gateway
-    - lease_time
     - name
     - netmask
-    - start_address
     type: object
   models.PoolForm:
     properties:
-      authorized_vlan:
-        type: integer
-      end_address:
-        type: string
       gateway:
         type: string
       lease_time:
         type: integer
-      managed_reference:
-        type: string
       name:
+        type: string
+      net_address:
         type: string
       netmask:
         type: integer
       only_serve_reimage:
         type: boolean
-      start_address:
-        type: string
     required:
-    - end_address
     - gateway
-    - lease_time
     - name
     - netmask
-    - start_address
     type: object
   models.User:
     properties:
@@ -384,185 +376,10 @@ definitions:
     type: object
 info:
   contact: {}
-  description: VMware Imaging Appliances written in GO with full HTTP-REST
+  description: VMware Imaging Appliances written in GO with full HTTP-REST API
   title: go-via
   version: "0.1"
 paths:
-  /addresses:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.Host'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Get all addresses
-      tags:
-      - addresses
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Add ip address
-        in: body
-        name: item
-        required: true
-        schema:
-          $ref: '#/definitions/models.HostAddressForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Host'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Create a new addresses
-      tags:
-      - addresses
-  /addresses/{id}:
-    delete:
-      consumes:
-      - application/json
-      parameters:
-      - description: Address ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Remove an existing address
-      tags:
-      - addresses
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: Address ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Host'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Get an existing address
-      tags:
-      - addresses
-    patch:
-      consumes:
-      - application/json
-      parameters:
-      - description: Address ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Update an ip address
-        in: body
-        name: item
-        required: true
-        schema:
-          $ref: '#/definitions/models.HostAddressForm'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Host'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Update an existing address
-      tags:
-      - addresses
-  /addresses/search:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Fields to search for
-        in: body
-        name: item
-        required: true
-        schema:
-          $ref: '#/definitions/models.Host'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Host'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Search for an address
-      tags:
-      - addresses
   /device_classes:
     get:
       consumes:
@@ -880,6 +697,181 @@ paths:
       summary: Update an existing group
       tags:
       - groups
+  /hosts:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Host'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Get all hosts
+      tags:
+      - hosts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Add a host
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/models.HostForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Host'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Create a new host
+      tags:
+      - hosts
+  /hosts/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Host ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Remove an existing host
+      tags:
+      - hosts
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Host ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Host'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Get an existing Host
+      tags:
+      - hosts
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Host ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update a host
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/models.HostForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Host'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Update an existing host
+      tags:
+      - hosts
+  /hosts/search:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Fields to search for
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/models.Host'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Host'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Search for an host
+      tags:
+      - hosts
   /images:
     get:
       consumes:

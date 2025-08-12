@@ -1,4 +1,4 @@
-module gitlab.soultec.ch/soultec/souldeploy
+module github.com/maxiepax/go-via
 
 go 1.24
 
