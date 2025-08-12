@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/lba-soultec/go-via/compare/v1.0.2...v1.0.3) (2025-08-12)
+
+
+### Bug Fixes
+
+* **deploy:** use kustomize ([e505250](https://github.com/lba-soultec/go-via/commit/e50525012afddacb78a68792ef4c79ce23f53330))
+
 ## [1.0.2](https://github.com/lba-soultec/go-via/compare/v1.0.1...v1.0.2) (2025-08-12)
 
 
