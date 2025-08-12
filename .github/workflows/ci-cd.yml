@@ -182,7 +182,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [semantic-release]   # so we know if a release happened when naming assets (optional)
     env:
-      RELEASEED: ${{ needs.semantic-release.outputs.released }}
       VERSION: ${{ needs.semantic-release.outputs.version }}
     steps:
       - uses: actions/checkout@v4
@@ -212,7 +211,6 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [semantic-release, build-go-cli]
-    if: needs.semantic-release.outputs.released == 'true'
     env:
       VERSION: ${{ needs.semantic-release.outputs.version }}
     steps:
@@ -240,6 +238,10 @@ jobs:
     env:
       VERSION: ${{ needs.semantic-release.outputs.version }}
     steps:
+    - name: Debug released output
+      run: |
+        echo "needs.semantic-release.outputs.released: ${{ needs.semantic-release.outputs.released }}"
+        echo "needs.semantic-release.outputs.version: ${{ needs.semantic-release.outputs.version }}"
     - uses: actions/checkout@v4
     - uses: azure/setup-kubectl@v4
     - uses: Azure/k8s-set-context@v4
