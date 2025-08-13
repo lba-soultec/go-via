@@ -1,3 +1,10 @@
+## [1.0.11](https://github.com/lba-soultec/go-via/compare/v1.0.10...v1.0.11) (2025-08-13)
+
+
+### Bug Fixes
+
+* **migration:** remove existing indexes on old db ([09c5d15](https://github.com/lba-soultec/go-via/commit/09c5d15ccc9f63dfa9ac2050d3adc9b2dad0bb14))
+
 ## [1.0.10](https://github.com/lba-soultec/go-via/compare/v1.0.9...v1.0.10) (2025-08-13)
 
 
