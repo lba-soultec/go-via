@@ -5,6 +5,7 @@ import { HealthChecksComponent } from './health-checks/health-checks.component';
 import { SettingsComponent } from './settings/settings.component';
 import { ManageUsersComponent } from './manage-users/manage-users.component';
 import { HelpComponent } from './help/help.component';
+import { ThemeComponent } from './settings/theme/theme.component';
 import { LogsComponent } from './logs/logs.component';
 import { LoginComponent } from './login/login.component';
 import { ManageDhcpPoolsComponent } from './manage-dhcp-pools/manage-dhcp-pools.component';
@@ -28,6 +29,7 @@ const routes: Routes = [
     { path: 'help', component: HelpComponent },
     { path: 'manage-users', component: ManageUsersComponent },
     { path: 'logs', component: LogsComponent },
+    { path: 'theme', component: ThemeComponent },
   ]},
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: '/deployments', pathMatch: 'full' }, // Default route

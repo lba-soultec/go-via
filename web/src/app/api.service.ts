@@ -1,3 +1,5 @@
+
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpEvent } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -9,6 +11,14 @@ import { map } from 'rxjs/operators';
 export class ApiService {
 
   constructor(private httpClient: HttpClient) {}
+
+  public getThemeImage(): Observable<Blob> {
+    return this.httpClient.get(
+      'https://' + window.location.host + '/v1/theme/image',
+      { responseType: 'blob' }
+    );
+  }
+
 
   public getHosts() {
     return this.httpClient.get(
@@ -59,6 +69,14 @@ export class ApiService {
       }
     );
   }
+
+  uploadBackgroundImage(formData: FormData) {
+      return this.httpClient.post(
+        'https://' + window.location.host + '/v1/theme/image',
+        formData
+      );
+    }
+
 
   public deleteHost(id) {
     return this.httpClient.delete(

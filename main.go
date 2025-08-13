@@ -65,7 +65,7 @@ func main() {
 	}
 
 	//migrate all models
-	db.Migrate([]interface{}{&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{}})
+	db.Migrate([]interface{}{&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{}, &models.Theme{}})
 
 	//create admin user if it doesn't exist
 	var adm models.User
@@ -107,6 +107,12 @@ func main() {
 
 	v1 := r.Group("/v1")
 	{
+		// Theme endpoints
+		theme := v1.Group("/theme")
+		{
+			theme.POST("/image", api.UploadThemeImage)
+			theme.GET("/image", api.GetThemeImage)
+		}
 
 		pools := v1.Group("/pools")
 		{
