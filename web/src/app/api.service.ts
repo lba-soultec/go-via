@@ -72,11 +72,11 @@ export class ApiService {
   }
 
   uploadBackgroundImage(formData: FormData) {
-    return this.httpClient.post(
-      'https://' + window.location.host + '/v1/background',
-      formData
-    );
-  }
+      return this.httpClient.post(
+        'https://' + window.location.host + '/v1/theme/image',
+        formData
+      );
+    }
 
 
   public deleteHost(id) {
