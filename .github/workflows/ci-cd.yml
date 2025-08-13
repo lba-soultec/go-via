@@ -145,6 +145,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Debug environment variables
+        run: |
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
+          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
+
       - name: Extract base metadata (branch / PR / SHA tags)
         id: meta
         uses: docker/metadata-action@v5
@@ -153,7 +159,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr,ref={{github.head_ref}}
-            type=sha,prefix={{github.head_ref}}-
+            type=sha,prefix={{github.ref_name}}-
       
       - name: Compose final tag list (add release + latest if published)
         id: tags
@@ -173,7 +179,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.tags.outputs.tags || github.sha }}
+          tags: ${{ steps.tags.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CI_COMMIT_TAG=${{ env.VERSION || github.sha }}
