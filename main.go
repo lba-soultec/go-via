@@ -65,10 +65,7 @@ func main() {
 	}
 
 	//migrate all models
-	err := db.DB.AutoMigrate(&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{})
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	db.Migrate([]interface{}{&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{}})
 
 	//create admin user if it doesn't exist
 	var adm models.User
