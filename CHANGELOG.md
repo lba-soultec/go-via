@@ -1,3 +1,22 @@
+# [1.1.0](https://github.com/lba-soultec/go-via/compare/v1.0.12...v1.1.0) (2025-08-13)
+
+
+### Bug Fixes
+
+* **ai:** resolve some issues ai did not cover and make it runnable. still a proposal ([afdc876](https://github.com/lba-soultec/go-via/commit/afdc87641338a1f3b188244ab0ea76b7f6ab6000))
+* **api:** remove ai mistakes ([9a2a991](https://github.com/lba-soultec/go-via/commit/9a2a9918252cdae9694aac5e448aa508f6cb55b8))
+* **debug:** remove debug ([085e33d](https://github.com/lba-soultec/go-via/commit/085e33d891961b2d06c321c41881f119667fe7c5))
+* **golint:** check err on close ([56aafb8](https://github.com/lba-soultec/go-via/commit/56aafb8ae2315ac384acc0a2258e5b8cc91a476e))
+* **sha:** use sha as fallback ([3fa1a66](https://github.com/lba-soultec/go-via/commit/3fa1a66ad07aa369bcd2241d5be365894b759909))
+* update uploadBackgroundImage endpoint to use theme image URL ([3b4842e](https://github.com/lba-soultec/go-via/commit/3b4842e46410fa5c850f6526f5adfc60f8b6f8d0))
+* **version:** use head ref ([d78d3f4](https://github.com/lba-soultec/go-via/commit/d78d3f4007199280f8a3e75d23814f0c569407e0))
+
+
+### Features
+
+* implement theme management with image upload and retrieval functionality ([7cf96e1](https://github.com/lba-soultec/go-via/commit/7cf96e10d9dd08c823b2edb4d7cc8d94e75c021d))
+* remove webauth and first implementation of request made by AI ([4cf67ba](https://github.com/lba-soultec/go-via/commit/4cf67ba5b17b4647ea8b9ffdedd4fc06c588decd))
+
 ## [1.0.12](https://github.com/lba-soultec/go-via/compare/v1.0.11...v1.0.12) (2025-08-13)
 
 
