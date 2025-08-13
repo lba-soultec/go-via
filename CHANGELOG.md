@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/lba-soultec/go-via/compare/v1.0.6...v1.0.7) (2025-08-12)
+
+
+### Bug Fixes
+
+* **vendoring:** update sum and mod ([3bfb786](https://github.com/lba-soultec/go-via/commit/3bfb786cfca569ba34ce04a4f9a0f5085fb9461d))
+
 ## [1.0.6](https://github.com/lba-soultec/go-via/compare/v1.0.5...v1.0.6) (2025-08-12)
 
 
