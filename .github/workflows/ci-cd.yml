@@ -144,7 +144,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      
       - name: Extract base metadata (branch / PR / SHA tags)
         id: meta
         uses: docker/metadata-action@v5
@@ -152,16 +152,11 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-            type=ref,event=pr,prefix=pr-
-            type=ref,event=tag
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
-            type=sha,prefix={{#if branch}}{{branch}}{{else}}{{#if base_ref}}{{base_ref}}{{else}}dev{{/if}}{{/if}}-
-            type=sha,format=long
-            type=sha,format=long,prefix={{#if branch}}{{branch}}{{else}}{{#if base_ref}}{{base_ref}}{{else}}dev{{/if}}{{/if}}-
-
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=ref,event=branch,enable=${{ !endsWith(github.ref, github.event.repository.default_branch) }}
+            type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
+      
       - name: Compose final tag list (add release + latest if published)
         id: tags
         run: |
