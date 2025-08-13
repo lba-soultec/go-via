@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"gitlab.soultec.ch/soultec/souldeploy/models"
+	"github.com/maxiepax/go-via/models"
 )
 
 func Error(c *gin.Context, status int, err error) {

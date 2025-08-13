@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.soultec.ch/soultec/souldeploy/db"
-	"gitlab.soultec.ch/soultec/souldeploy/models"
+	"github.com/maxiepax/go-via/db"
+	"github.com/maxiepax/go-via/models"
 
 	"github.com/sirupsen/logrus"
 )

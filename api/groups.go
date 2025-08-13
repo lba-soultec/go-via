@@ -12,10 +12,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/imdario/mergo"
+	"github.com/maxiepax/go-via/db"
+	"github.com/maxiepax/go-via/models"
+	"github.com/maxiepax/go-via/secrets"
 	"github.com/sirupsen/logrus"
-	"gitlab.soultec.ch/soultec/souldeploy/db"
-	"gitlab.soultec.ch/soultec/souldeploy/models"
-	"gitlab.soultec.ch/soultec/souldeploy/secrets"
 	"gorm.io/gorm"
 )
 
@@ -226,7 +226,7 @@ func DeleteGroup(c *gin.Context) {
 
 	// Load the item
 	var item models.Group
-	if res := db.DB.Preload("Address").First(&item, id); res.Error != nil {
+	if res := db.DB.Preload("Host").First(&item, id); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			Error(c, http.StatusNotFound, fmt.Errorf("not found")) // 404
 		} else {
@@ -236,7 +236,7 @@ func DeleteGroup(c *gin.Context) {
 	}
 
 	// check if the group is empty, if it's not, deny the delete.
-	if len(item.Address) < 1 {
+	if len(item.Host) < 1 {
 		// Delete it
 		if res := db.DB.Delete(&item); res.Error != nil {
 			Error(c, http.StatusInternalServerError, res.Error) // 500

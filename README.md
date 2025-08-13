@@ -105,7 +105,7 @@ Most linux distributions should work, this has been tested on Ubuntu 20.20.
 
 ``` bash
 #wget the release you want to download, e.g go-via_.<release>_linux_amd64.tar.gz
-wget https://gitlab.soultec.ch/soultec/souldeploy/releases/download/<release>/go-via_.<release>_linux_amd64.tar.gz
+wget https://github.com/maxiepax/go-via/releases/download/<release>/go-via_.<release>_linux_amd64.tar.gz
 
 
 #untar/extract it
@@ -197,7 +197,7 @@ terminal 1:
 ``` bash
 mkdir ~/go
 cd ~/go
-git clone https://gitlab.soultec.ch/soultec/souldeploy.git
+git clone https://github.com/maxiepax/go-via.git
 cd go-via
 go run *.go
 ```

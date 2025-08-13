@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/maxiepax/go-via/ilomapi"
 	"github.com/sirupsen/logrus"
-	"gitlab.soultec.ch/soultec/souldeploy/ilomapi"
 )
 
 // CheckIP handles the POST request for checking if the ip is available under given port

@@ -5,8 +5,8 @@ import (
 	"net"
 	"strings"
 
+	"github.com/maxiepax/go-via/ilomapi"
 	"github.com/spf13/cobra"
-	"gitlab.soultec.ch/soultec/souldeploy/ilomapi"
 )
 
 var rebootServerCmd = &cobra.Command{

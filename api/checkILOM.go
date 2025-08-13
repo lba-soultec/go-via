@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.soultec.ch/soultec/souldeploy/models"
+	"github.com/maxiepax/go-via/models"
 )
 
 // CheckIP handles the POST request for checking if the ip is available under given port

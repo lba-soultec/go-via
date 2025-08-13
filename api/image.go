@@ -19,10 +19,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/imdario/mergo"
 	"github.com/kdomanski/iso9660/util"
+	"github.com/maxiepax/go-via/db"
+	"github.com/maxiepax/go-via/models"
 	"github.com/sirupsen/logrus"
-	"gitlab.soultec.ch/soultec/souldeploy/config"
-	"gitlab.soultec.ch/soultec/souldeploy/db"
-	"gitlab.soultec.ch/soultec/souldeploy/models"
 	"gorm.io/gorm"
 )
 
@@ -85,145 +84,143 @@ func GetImage(c *gin.Context) {
 // @Failure 400 {object} models.APIError
 // @Failure 500 {object} models.APIError
 // @Router /images [post]
-func CreateImage(conf *config.Config) func(c *gin.Context) {
-	return func(c *gin.Context) {
+func CreateImage(c *gin.Context) {
 
-		f, err := c.MultipartForm()
+	f, err := c.MultipartForm()
+	if err != nil {
+		Error(c, http.StatusInternalServerError, err) // 500
+		return
+	}
+
+	files := f.File["file[]"]
+
+	for _, file := range files {
+
+		filename := file.Filename
+
+		item := models.Image{}
+		item.ISOImage = filepath.Base(file.Filename)
+		item.Path = path.Join(".", "images", filename)
+		item.Hash = c.PostForm("hash")
+		item.Description = c.PostForm("description")
+
+		err = os.MkdirAll(filepath.Dir(item.Path), os.ModePerm)
 		if err != nil {
 			Error(c, http.StatusInternalServerError, err) // 500
 			return
 		}
 
-		files := f.File["file[]"]
+		_, err = SaveUploadedFile(file, item.Path)
+		if err != nil {
+			Error(c, http.StatusInternalServerError, err) // 500
+			return
+		}
 
-		for _, file := range files {
-
-			filename := file.Filename
-
-			item := models.Image{}
-			item.ISOImage = filepath.Base(file.Filename)
-			item.Path = path.Join(".", "tftp", filename)
-			item.Hash = c.PostForm("hash")
-			item.Description = c.PostForm("description")
-
-			err = os.MkdirAll(filepath.Dir(item.Path), os.ModePerm)
-			if err != nil {
-				Error(c, http.StatusInternalServerError, err) // 500
-				return
-			}
-
-			_, err = SaveUploadedFile(file, item.Path)
-			if err != nil {
-				Error(c, http.StatusInternalServerError, err) // 500
-				return
-			}
-
-			if item.Hash == "" {
-				logrus.WithFields(logrus.Fields{
-					"Hash": item.Hash,
-				}).Warning("Image uploaded with no hash, please consider using a hash to avoid image corruption")
-			} else {
-				logrus.WithFields(logrus.Fields{
-					"Hash": item.Hash,
-				}).Warning("Image uploaded with hash, comparing hash!")
-
-				f, err := os.Open(item.Path)
-				if err != nil {
-					logrus.Warning(err)
-				}
-				defer func() {
-					if err := f.Close(); err != nil {
-						logrus.Error(err)
-					}
-				}()
-
-				h := sha256.New()
-				if _, err := io.Copy(h, f); err != nil {
-					Error(c, http.StatusInternalServerError, err) // 500
-					log.Fatal(err)
-				}
-
-				if hex.EncodeToString(h.Sum(nil)) != item.Hash {
-					err := fmt.Errorf("hash was invalid")
-					Error(c, http.StatusBadRequest, err) // 400
-					err = os.Remove(item.Path)
-					if err != nil {
-						Error(c, http.StatusInternalServerError, err) // 500
-						logrus.Error(err)
-					}
-					return
-				}
-
-			}
+		if item.Hash == "" {
+			logrus.WithFields(logrus.Fields{
+				"Hash": item.Hash,
+			}).Warning("Image uploaded with no hash, please consider using a hash to avoid image corruption")
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"Hash": item.Hash,
+			}).Warning("Image uploaded with hash, comparing hash!")
 
 			f, err := os.Open(item.Path)
 			if err != nil {
-				log.Fatalf("failed to open file: %s", err)
+				logrus.Warning(err)
 			}
 			defer func() {
 				if err := f.Close(); err != nil {
-					logrus.WithFields(logrus.Fields{
-						"postconfig": "couldn't close uploaded file",
-					}).Error(err)
+					logrus.Error(err)
 				}
 			}()
 
-			//strip the filextension, eg. vmware.iso = vmware
-			fn := strings.TrimSuffix(file.Filename, filepath.Ext(file.Filename))
-			//merge into filepath
-			fp := path.Join(".", "tftp", fn)
-
-			if err = util.ExtractImageToDirectory(f, fp); err != nil {
-				logrus.Errorf("failed to extract image: %s", err)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to extract image: %s", err)})
-				return
+			h := sha256.New()
+			if _, err := io.Copy(h, f); err != nil {
+				Error(c, http.StatusInternalServerError, err) // 500
+				log.Fatal(err)
 			}
 
-			//remove the file
-			err = os.Remove(item.Path)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"error": err,
-				}).Debug("image")
-			}
-
-			//update item.Path
-			item.Path = fp
-
-			// get size of extracted dir
-
-			size, err := dirSize(fp)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"error": err,
-				}).Debug("image")
-			}
-
-			item.Size = size
-
-			/*
-				mime, err := mimetype.DetectFile(item.StoragePath)
+			if hex.EncodeToString(h.Sum(nil)) != item.Hash {
+				err := fmt.Errorf("hash was invalid")
+				Error(c, http.StatusBadRequest, err) // 400
+				err = os.Remove(item.Path)
 				if err != nil {
 					Error(c, http.StatusInternalServerError, err) // 500
-					return
+					logrus.Error(err)
 				}
-				item.Type = mime.String()
-				item.Extension = mime.Extension()
-			*/
-
-			if result := db.DB.Table("images").Create(&item); result.Error != nil {
-				Error(c, http.StatusInternalServerError, result.Error) // 500
 				return
 			}
-			logrus.WithFields(logrus.Fields{
-				"id":          item.ID,
-				"image":       item.ISOImage,
-				"path":        item.Path,
-				"size":        item.Size,
-				"description": item.Description,
-			}).Info("image")
-			c.JSON(http.StatusOK, item) // 200
+
 		}
+
+		f, err := os.Open(item.Path)
+		if err != nil {
+			log.Fatalf("failed to open file: %s", err)
+		}
+		defer func() {
+			if err := f.Close(); err != nil {
+				logrus.WithFields(logrus.Fields{
+					"postconfig": "couldn't close uploaded file",
+				}).Error(err)
+			}
+		}()
+
+		//strip the filextension, eg. vmware.iso = vmware
+		fn := strings.TrimSuffix(file.Filename, filepath.Ext(file.Filename))
+		//merge into filepath
+		fp := path.Join(".", "images", fn)
+
+		if err = util.ExtractImageToDirectory(f, fp); err != nil {
+			logrus.Errorf("failed to extract image: %s", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to extract image: %s", err)})
+			return
+		}
+
+		//remove the file
+		err = os.Remove(item.Path)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Debug("image")
+		}
+
+		//update item.Path
+		item.Path = fp
+
+		// get size of extracted dir
+
+		size, err := dirSize(fp)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Debug("image")
+		}
+
+		item.Size = size
+
+		/*
+			mime, err := mimetype.DetectFile(item.StoragePath)
+			if err != nil {
+				Error(c, http.StatusInternalServerError, err) // 500
+				return
+			}
+			item.Type = mime.String()
+			item.Extension = mime.Extension()
+		*/
+
+		if result := db.DB.Table("images").Create(&item); result.Error != nil {
+			Error(c, http.StatusInternalServerError, result.Error) // 500
+			return
+		}
+		logrus.WithFields(logrus.Fields{
+			"id":          item.ID,
+			"image":       item.ISOImage,
+			"path":        item.Path,
+			"size":        item.Size,
+			"description": item.Description,
+		}).Info("image")
+		c.JSON(http.StatusOK, item) // 200
 	}
 }
 
