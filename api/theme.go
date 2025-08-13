@@ -19,7 +19,12 @@ func UploadThemeImage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
 		return
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to close file"})
+		}
+	}()
 
 	if header.Size > 5*1024*1024 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "File size exceeds 5MB"})
