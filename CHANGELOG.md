@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/lba-soultec/go-via/compare/v1.0.7...v1.0.8) (2025-08-13)
+
+
+### Bug Fixes
+
+* **lint:** resolve all issues found by golangci-lint ([c921bc5](https://github.com/lba-soultec/go-via/commit/c921bc5dd7d50c8eaebb3facbe5c80f8e2d140ab))
+
 ## [1.0.7](https://github.com/lba-soultec/go-via/compare/v1.0.6...v1.0.7) (2025-08-12)
 
 
