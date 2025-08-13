@@ -11,7 +11,8 @@ import { UserComponent } from './components/user/user.component';
 import { StatehandlerProcessorService, StatehandlerProcessorServiceImpl } from './services/statehandler-processor.service';
 import { StatehandlerService, StatehandlerServiceImpl } from './services/statehandler.service';
 import { StorageService } from './services/storage.service';
-import { ConfigService } from 'src/app/services/config.service';
+import { ConfigService } from './services/config.service';
+import { AuthenticationService } from './services/authentication.service';
 
 const authConfig: AuthConfig = {
     
@@ -20,7 +21,7 @@ const authConfig: AuthConfig = {
 
 let allowedUrls: string[] = [];
 
-const loadConfig = (configService: ConfigService,stateHandler: StatehandlerService) => {
+const loadConfig = (configService: ConfigService) => {
   return () =>
     configService.loadConfig().then((config) => {
     Object.assign(authConfig, config.authConfig); // Merge with the loaded config
@@ -29,6 +30,12 @@ const loadConfig = (configService: ConfigService,stateHandler: StatehandlerServi
     
 };
 
+const initializeAuth = (authService: AuthenticationService, configService: ConfigService) => {
+  return () => {
+    // Ensure config is loaded first, then initialize authentication
+    return configService.getConfig() ? authService.initializeOnStartup() : Promise.resolve(false);
+  };
+};
 
 const stateHandlerFn = (stateHandler: StatehandlerService) => {
   return () => {
@@ -51,15 +58,21 @@ const stateHandlerFn = (stateHandler: StatehandlerService) => {
         })], providers: [
         {
             provide: APP_INITIALIZER,
-            useFactory: stateHandlerFn,
-            multi: true,
-            deps: [StatehandlerService],
-        },
-        {
-            provide: APP_INITIALIZER,
             useFactory: loadConfig,
             multi: true,
             deps: [ConfigService],
+        },
+        {
+            provide: APP_INITIALIZER,
+            useFactory: initializeAuth,
+            multi: true,
+            deps: [AuthenticationService, ConfigService],
+        },
+        {
+            provide: APP_INITIALIZER,
+            useFactory: stateHandlerFn,
+            multi: true,
+            deps: [StatehandlerService],
         },
         {
             provide: AuthConfig,

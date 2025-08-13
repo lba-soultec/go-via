@@ -29,6 +29,22 @@ export class AuthenticationService {
     return from(this.oauthService.loadUserProfile());
   }
 
+  public async initializeOnStartup(): Promise<boolean> {
+    // Configure OAuth service with loaded config
+    this.oauthService.configure(this.authConfig);
+    this.oauthService.setupAutomaticSilentRefresh();
+    this.oauthService.strictDiscoveryDocumentValidation = false;
+    
+    // Try to restore tokens from storage without triggering login flow
+    await this.oauthService.loadDiscoveryDocumentAndTryLogin();
+    
+    // Update authentication state based on token validity
+    this._authenticated = this.oauthService.hasValidAccessToken();
+    this._authenticationChanged.next(this.authenticated);
+    
+    return this.authenticated;
+  }
+
   public async authenticate(setState: boolean = true): Promise<boolean> {
     this.oauthService.configure(this.authConfig);
     this.oauthService.setupAutomaticSilentRefresh();
