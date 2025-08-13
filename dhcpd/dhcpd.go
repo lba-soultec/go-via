@@ -540,7 +540,15 @@ func Init(intf string) {
 	if err != nil {
 		logrus.Fatalf("dhcp: failed to listen: %v", err)
 	}
-	defer c.Close()
+	defer func() {
+		err := c.Close()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"if":  intf,
+				"err": err,
+			}).Errorf("dhcp: failed to close socket")
+		}
+	}()
 
 	logrus.WithFields(logrus.Fields{
 		"mac": mac,
@@ -632,7 +640,16 @@ func Init(intf string) {
 				continue
 			}
 
-			c.WriteTo(buf.Bytes(), src)
+			_, err = c.WriteTo(buf.Bytes(), src)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"response":   findMsgType(resp).String(),
+					"client-mac": req.ClientHWAddr.String(),
+					"ip":         resp.YourClientIP,
+					"relay":      req.RelayAgentIP,
+				}).Warnf("dhcp: failed to send response to %s %s", source, t)
+				continue
+			}
 
 			//spew.Dump(resp)
 			logrus.WithFields(logrus.Fields{
@@ -686,7 +703,16 @@ func buildHeaders(mac net.HardwareAddr, ip net.IP, srcEth *layers.Ethernet, srcI
 		udp.DstPort = 68
 	}
 
-	udp.SetNetworkLayerForChecksum(ip4)
+	err := udp.SetNetworkLayerForChecksum(ip4)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"src-ip":   ip4.SrcIP,
+			"dst-ip":   ip4.DstIP,
+			"src-port": udp.SrcPort,
+			"dst-port": udp.DstPort,
+			"err":      err,
+		}).Errorf("dhcp: failed to set network layer for checksum")
+	}
 
 	return []gopacket.SerializableLayer{eth, ip4, udp}
 }

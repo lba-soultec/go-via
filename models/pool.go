@@ -166,12 +166,3 @@ func (p *Pool) LastAddr() (net.IP, error) {
 	binary.BigEndian.PutUint32(ip, binary.BigEndian.Uint32(startNet.IP.To4())|^binary.BigEndian.Uint32(startNet.Mask))
 	return ip, nil
 }
-
-func next(ip net.IP) {
-	for j := len(ip) - 1; j >= 0; j-- {
-		ip[j]++
-		if ip[j] > 0 {
-			break
-		}
-	}
-}

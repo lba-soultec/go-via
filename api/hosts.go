@@ -528,8 +528,8 @@ func UpdateHost(c *gin.Context) {
 	}
 
 	// Mergo doesn't overwrite 0 or false values, force set
-	item.HostForm.Reimage = form.Reimage
-	item.HostForm.Progress = form.Progress
+	item.Reimage = form.Reimage
+	item.Progress = form.Progress
 
 	// Save it
 	if res := db.DB.Save(&item); res.Error != nil {
