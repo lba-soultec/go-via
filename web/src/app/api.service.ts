@@ -19,7 +19,6 @@ export class ApiService {
     );
   }
 
-  constructor(private httpClient: HttpClient) {}
 
   public getHosts() {
     return this.httpClient.get(
