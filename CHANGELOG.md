@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/lba-soultec/go-via/compare/v1.1.0...v1.1.1) (2025-08-13)
+
+
+### Bug Fixes
+
+* **staik:** rebuild statik ([98311e6](https://github.com/lba-soultec/go-via/commit/98311e6924e0084dd4cfe5dfd9fd3e46d68ea44d))
+
 # [1.1.0](https://github.com/lba-soultec/go-via/compare/v1.0.12...v1.1.0) (2025-08-13)
 
 
