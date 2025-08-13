@@ -1,3 +1,5 @@
+
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpEvent } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
@@ -7,6 +9,15 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ApiService {
+
+  constructor(private httpClient: HttpClient) {}
+
+  public getThemeImage(): Observable<Blob> {
+    return this.httpClient.get(
+      'https://' + window.location.host + '/v1/theme/image',
+      { responseType: 'blob' }
+    );
+  }
 
   constructor(private httpClient: HttpClient) {}
 

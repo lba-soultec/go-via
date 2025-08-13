@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { ApiService } from '../api.service';
 import { FormsModule } from '@angular/forms';
 import { ClarityModule } from '@clr/angular';
 import { CommonModule } from '@angular/common';
@@ -12,12 +13,10 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [FormsModule, ClarityModule, CommonModule]
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   username: string;
   password: string;
   errorMessage: string;
-
-  constructor(private authService: AuthService, private router: Router) {}
 
   form = {
     type: 'local',
@@ -26,16 +25,45 @@ export class LoginComponent {
     rememberMe: false,
   };
 
-  login() {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private api: ApiService,
+    private renderer: Renderer2
+  ) {}
 
+  ngOnInit(): void {
+    this.api.getThemeImage().subscribe({
+      next: (blob) => {
+        if (blob && blob.size > 0) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            this.setBackground(reader.result as string);
+          };
+          reader.readAsDataURL(blob);
+        } else {
+          this.setBackground('/assets/background.png');
+        }
+      },
+      error: () => {
+        this.setBackground('/assets/background.png');
+      }
+    });
+  }
+
+  setBackground(url: string) {
+    const el = document.querySelector('.login-wrapper') as HTMLElement;
+    if (el) {
+      this.renderer.setStyle(el, 'background-image', `url('${url}')`);
+    }
+  }
+
+  login() {
     this.authService.login(this.form.username, this.form.password).subscribe(
       (resp: any) => {
-
-          console.log('Login successful');
-          localStorage.setItem('username', this.form.username); // Store the username
-        
-          this.router.navigate(['/']);
-    
+        console.log('Login successful');
+        localStorage.setItem('username', this.form.username);
+        this.router.navigate(['/']);
       },
       (error) => {
         console.log(error);
@@ -43,7 +71,6 @@ export class LoginComponent {
         this.router.navigate(['/login']);
       }
     );
-
   }
 }
 
