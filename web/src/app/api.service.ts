@@ -60,6 +60,14 @@ export class ApiService {
     );
   }
 
+  uploadBackgroundImage(formData: FormData) {
+    return this.httpClient.post(
+      'https://' + window.location.host + '/v1/background',
+      formData
+    );
+  }
+
+
   public deleteHost(id) {
     return this.httpClient.delete(
       'https://' + window.location.host + `/v1/addresses/${id}`
