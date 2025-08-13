@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/lba-soultec/go-via/compare/v1.0.9...v1.0.10) (2025-08-13)
+
+
+### Bug Fixes
+
+* **creds:** mention the founder ([5e0cfc7](https://github.com/lba-soultec/go-via/commit/5e0cfc7eebe0ceef160f9f064a888d3e7ac8e8b0))
+
 ## [1.0.9](https://github.com/lba-soultec/go-via/compare/v1.0.8...v1.0.9) (2025-08-13)
 
 
