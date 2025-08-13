@@ -152,8 +152,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
+            type=ref,event=pr,ref={{github.head_ref}}
+            type=sha,prefix={{github.head_ref}}-
       
       - name: Compose final tag list (add release + latest if published)
         id: tags
