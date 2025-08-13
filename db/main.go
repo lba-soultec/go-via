@@ -90,12 +90,21 @@ func indexExists(index string) bool {
 	if err != nil {
 		fmt.Println("Error fetching indexes:", err)
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			fmt.Println("Error closing rows:", err)
+		}
+	}()
 
 	fmt.Println("Existing indexes:")
 	for rows.Next() {
 		var indexName, tableName string
-		rows.Scan(&indexName, &tableName)
+		err := rows.Scan(&indexName, &tableName)
+		if err != nil {
+			fmt.Println("Error scanning rows:", err)
+			continue
+		}
 		fmt.Printf("Index: %s, Table: %s\n", indexName, tableName)
 
 		if indexName == index {
