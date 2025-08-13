@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/lba-soultec/go-via/compare/v1.0.8...v1.0.9) (2025-08-13)
+
+
+### Bug Fixes
+
+* **naming:** rename to soda ([660f041](https://github.com/lba-soultec/go-via/commit/660f0415d28b0a1c742459f3cb8d3fc74fb2027d))
+
 ## [1.0.8](https://github.com/lba-soultec/go-via/compare/v1.0.7...v1.0.8) (2025-08-13)
 
 
