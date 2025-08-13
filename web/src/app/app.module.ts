@@ -26,6 +26,7 @@ import { DhcpPoolManagerComponent } from './components/dhcp-pool-manager/dhcp-po
 import { ImageManagerComponent } from './components/image-manager/image-manager.component';
 import { WizardComponent } from './wizard/wizard.component';
 import { GroupManagerComponent } from './components/group-manager/group-manager.component';
+import { ThemeComponent } from './settings/theme/theme.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -44,7 +45,8 @@ import { GroupManagerComponent } from './components/group-manager/group-manager.
     HostDeploymentComponent,
     ImageManagerComponent,
     WizardComponent,
-    GroupManagerComponent
+  GroupManagerComponent,
+  ThemeComponent
   ],
   imports: [
     BrowserModule,
