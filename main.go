@@ -65,10 +65,7 @@ func main() {
 	}
 
 	//migrate all models
-		err := db.DB.AutoMigrate(&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{}, &models.Theme{})
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	db.Migrate([]interface{}{&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{}, &models.Theme{}})
 
 	//create admin user if it doesn't exist
 	var adm models.User
@@ -108,14 +105,14 @@ func main() {
 		ui.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
-		v1 := r.Group("/v1")
+	v1 := r.Group("/v1")
+	{
+		// Theme endpoints
+		theme := v1.Group("/theme")
 		{
-	   // Theme endpoints
-	   theme := v1.Group("/theme")
-	   {
-		   theme.POST("/image", api.UploadThemeImage)
-		   theme.GET("/image", api.GetThemeImage)
-	   }
+			theme.POST("/image", api.UploadThemeImage)
+			theme.GET("/image", api.GetThemeImage)
+		}
 
 		pools := v1.Group("/pools")
 		{
