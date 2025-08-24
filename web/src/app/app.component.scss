@@ -30,4 +30,12 @@
     left: 50%;
     transform: translate(-50%, -50%);
   }
+
+  .main-container {
+    min-height: 100vh;
+    /* Background image will be set dynamically by the component */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
   

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../../api.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-theme',
@@ -13,7 +14,7 @@ export class ThemeComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private router: Router) {}
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -45,11 +46,17 @@ export class ThemeComponent {
     formData.append('background', this.selectedFile);
     this.api.uploadBackgroundImage(formData).subscribe({
       next: () => {
-        this.successMessage = 'Background image updated successfully!';
+        this.successMessage = 'Background image updated successfully! The new background will be visible on next page load.';
         this.errorMessage = '';
+        // Navigate away and back to refresh the background
+        setTimeout(() => {
+          this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+            this.router.navigate(['/settings/theme']);
+          });
+        }, 2000);
       },
       error: err => {
-        this.errorMessage = 'Failed to upload image.';
+        this.errorMessage = 'Failed to upload image. Please try again.';
         this.successMessage = '';
       }
     });
