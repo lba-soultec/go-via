@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/lba-soultec/go-via/compare/v1.1.2...v1.1.3) (2025-09-10)
+
+
+### Bug Fixes
+
+* **generate:** generate artifacts prior to build ([6b0054d](https://github.com/lba-soultec/go-via/commit/6b0054dbec468c0864b396912f912b8ab5bde2ab))
+
 ## [1.1.2](https://github.com/lba-soultec/go-via/compare/v1.1.1...v1.1.2) (2025-09-10)
 
 
