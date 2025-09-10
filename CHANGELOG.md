@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/lba-soultec/go-via/compare/v1.1.1...v1.1.2) (2025-09-10)
+
+
+### Bug Fixes
+
+* **deployments:** update navigation and enhance guided deployment introduction ([426b907](https://github.com/lba-soultec/go-via/commit/426b907d194fd0c7aaf5f0a0ecce57d148864cc2))
+
 ## [1.1.1](https://github.com/lba-soultec/go-via/compare/v1.1.0...v1.1.1) (2025-08-13)
 
 
