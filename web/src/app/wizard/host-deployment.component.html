@@ -1,4 +1,12 @@
-<button class="btn btn-primary" (click)="wizard.open()">Start Guided Host Deployment</button>
+<div class="deployment-wizard-intro">
+  <h2>Guided Host Deployment</h2>
+  <p class="description">
+    Use this wizard to streamline your server deployment process. Configure DHCP pools, 
+    manage OS images, create host groups, and deploy multiple hosts through an intuitive 
+    step-by-step workflow.
+  </p>
+  <button class="btn btn-primary" (click)="wizard.open()">Start Guided Host Deployment</button>
+</div>
 
 <clr-wizard #wizard [(clrWizardOpen)]="open" [clrWizardSize]="'xl'" (clrWizardOnCancel)="doCancel()">
   <clr-wizard-title>
