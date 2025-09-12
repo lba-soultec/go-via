@@ -58,6 +58,7 @@ export class ManageGroupsComponent implements OnInit {
   addHostFormModal = false;
   progress = {};
   progresstext = {};
+  serverPowerStates = {}; // Add this property to track server power states
 
   visibleDatagrids: { [key: string]: boolean } = {};
 
@@ -155,10 +156,85 @@ export class ManageGroupsComponent implements OnInit {
 
   toggleDatagrid(groupId: number) {
     this.expandedGroupId = this.expandedGroupId === groupId ? null : groupId;
+
+    
+    // Only fetch power states when expanding a group
+    if (this.expandedGroupId === groupId) {
+      
+      this.fetchPowerStatesForGroup(groupId);
+    }
   }
 
   isDatagridVisible(groupId: number): boolean {
     return this.expandedGroupId === groupId;
+  }
+
+  fetchPowerStatesForGroup(groupId: number) {
+    this.serverPowerStates = {};
+    const group = this.groups.find(g => g.id === groupId);
+    if (group && group.hosts) {
+      group.hosts.forEach(host => {
+        // Only fetch if we don't already have the power state
+        if (!this.serverPowerStates[host.id]) {
+          this.fetchPowerState(host.id);
+        }
+      });
+    }
+  }
+
+  refreshPowerStatesForGroup(groupId: number) {
+    const group = this.groups.find(g => g.id === groupId);
+    if (group && group.hosts) {
+      // Clear existing power states for this group to force refresh
+      group.hosts.forEach(host => {
+        this.serverPowerStates[host.id] = 'refreshing...';
+      });
+      
+      // Fetch fresh power states for all hosts in the group
+      group.hosts.forEach(host => {
+        this.fetchPowerState(host.id);
+      });
+    }
+  }
+
+
+  fetchPowerState(hostId: string) {
+    var payload
+    this.apiService.getHost(parseInt(hostId, 10)).subscribe((host: any) => {
+      const id = host.id;
+      var password = host.password;
+      console.log(host)  
+      payload = {
+        iloIpAddr: host.ilo_ip,
+        apiFlavour: host.ilo_api_flavour,
+        port: host.ilo_port,
+        username: host.ilo_user,
+        password: host.ilo_password,
+        vlanID: 123,
+      };
+
+      this.apiService.getServerPowerState(parseInt(hostId, 10), payload).subscribe(
+        (response: any) => {
+          // Success callback - this is where successful responses should be handled
+          console.log("Server Power State for host", hostId, ":", response);
+          this.serverPowerStates[hostId] = response.powerState || 'unknown';
+        }, 
+        (error: any) => {
+          // Error callback - handle actual errors
+          console.error("Error fetching server power state for host", hostId, ":", error);
+          if (error.status) {
+            this.errors = error.error;
+          } else {
+            this.errors = [error.message];
+          }
+          this.serverPowerStates[hostId] = 'error';
+        }
+      );
+
+
+    
+
+    });
   }
   
 
@@ -539,6 +615,12 @@ export class ManageGroupsComponent implements OnInit {
     
 
     });
+  }
+
+  getServerPowerState(hostId: string) {
+    // Use the centralized method instead of making direct API calls
+    this.fetchPowerState(hostId);
+    return this.serverPowerStates[hostId] || 'loading...';
   }
 
   startHost(hostId: string) {

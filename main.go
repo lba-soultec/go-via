@@ -210,6 +210,8 @@ func main() {
 			ilohosts.POST(":id/onetimeboot", api.OneTimeBoot)  // Set one time boot
 
 			ilohosts.POST("/checkilo", api.CheckIP) // Check ILO IP
+
+			ilohosts.POST(":id/powerstate", api.GetServerPowerStateFromIlo) // Get power state
 		}
 		v1.GET("log", logServer.Handle)
 

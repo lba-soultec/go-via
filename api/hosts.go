@@ -168,6 +168,52 @@ func ShutdownIloHost(c *gin.Context) {
 
 }
 
+func GetServerPowerStateFromIlo(c *gin.Context) {
+	// Log that the method has been called
+	logrus.Debug("Received get power state request")
+	// Extract query parameters and create API client
+	api, _, err := createAPIClientFromParams(c)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"endpoint": api.GetEndpoint(),
+			"error":    err.Error(),
+		}).Error("Failed to create client")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Failed to create client",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	powerState, err := api.GetServerPowerState()
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"endpoint": api.GetEndpoint(),
+			"error":    err.Error(),
+		}).Error("Failed to get power state")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to get power state",
+			"message": err.Error(),
+		})
+		return
+	}
+	// Log the host configuration
+	logrus.WithFields(logrus.Fields{
+		"endpoint":   api.GetEndpoint(),
+		"powerState": powerState.String(),
+	}).Debug("Fetched power state successfully")
+	// Return the host configuration as JSON
+	c.JSON(http.StatusOK, gin.H{
+		"success":    true,
+		"message":    "Fetched power state successfully",
+		"powerState": powerState.String(),
+
+		"endpoint":   api.GetEndpoint(),
+		"apiFlavour": api.GetFlavour(),
+	})
+
+}
+
 func RebootIloHost(c *gin.Context) {
 	// Log that the method has been called
 	logrus.Debug("Received reboot request")

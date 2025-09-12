@@ -43,3 +43,30 @@ clr-dg-row {
     align-items: center; // Center-align content in rows
 }
 
+.power-state {
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    min-height: 24px; // Ensure consistent height
+    
+    .badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 3px;
+    }
+    
+    clr-spinner {
+        --clr-spinner-color: var(--clr-color-action-600);
+        
+        &[clrSmall] {
+            width: 18px;
+            height: 18px;
+        }
+    }
+}
+
+.progress {
+    margin-bottom: 5px;
+}
+
+

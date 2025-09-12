@@ -283,6 +283,41 @@ func (r *RedFishApi) SetOneTimeHTTPBoot() error {
 	return err
 }
 
+func (r *RedFishApi) GetServerPowerState() (PowerState, error) {
+	// Connect to the Redfish API
+	c, err := gofish.Connect(*r.config)
+	if err != nil {
+		log.Warnf("Failed to connect to Redfish API: %v", err)
+		return PowerStateUnknown, err
+	}
+	defer c.Logout()
+
+	// Get all systems
+	service := c.Service
+	systems, err := service.Systems()
+	if err != nil {
+		log.Warnf("Failed to get systems: %v", err)
+		return PowerStateUnknown, err
+	}
+
+	for _, system := range systems {
+		switch system.PowerState {
+		case goredfish.OnPowerState:
+			return PowerStateOn, nil
+		case goredfish.OffPowerState:
+			return PowerStateOff, nil
+		case goredfish.PoweringOnPowerState:
+			return PowerStateStarting, nil
+		case goredfish.PoweringOffPowerState:
+			return PowerStateStopping, nil
+		default:
+			return PowerStateUnknown, nil
+		}
+	}
+
+	return PowerStateUnknown, nil
+}
+
 func (r *RedFishApi) RebootServer() error {
 	// Connect to the Redfish API
 	c, err := gofish.Connect(*r.config)

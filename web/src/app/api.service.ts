@@ -229,6 +229,17 @@ export class ApiService {
       payload
     );
   }
+
+  public getServerPowerState(hostId, payload): Observable<any> {
+    if (!hostId) {
+      console.error('Invalid host ID for getting power state:', hostId);
+      return of({ error: 'Invalid host ID' });
+    }
+    return this.httpClient.post(
+      `https://${window.location.host}/v1/ilohosts/${hostId}/powerstate`,
+      payload
+    );
+  }
   public startHost(hostId, payload) {
     console.log(payload)
     return this.httpClient.post(

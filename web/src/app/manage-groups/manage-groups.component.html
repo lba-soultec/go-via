@@ -39,7 +39,7 @@
         <clr-dg-column>ilo ip address</clr-dg-column>
         <clr-dg-column>mac address</clr-dg-column>
         <clr-dg-column>progress</clr-dg-column>
-
+        <clr-dg-column>Server Power State</clr-dg-column>
         <clr-dg-row *ngFor="let host of group.hosts">
             <clr-dg-cell>{{host.hostname}}.{{host.domain}}</clr-dg-cell>
             <clr-dg-cell>{{host.ip}}</clr-dg-cell>
@@ -51,6 +51,23 @@
                     <progress value="{{ progress[host.id] }}" max="100"></progress>
                 </div>
                 {{ progresstext[host.id] }}
+            </clr-dg-cell>
+            <clr-dg-cell>
+                <div class="power-state">
+                    <!-- Show loading spinner when no power state is available yet -->
+                    <clr-spinner *ngIf="!serverPowerStates[host.id]" clrInline clrSmall>Loading</clr-spinner>
+                    
+                    <!-- Show power state badge when available -->
+                    <span *ngIf="serverPowerStates[host.id]" class="badge" 
+                          [class.badge-success]="serverPowerStates[host.id] === 'on'"
+                          [class.badge-danger]="serverPowerStates[host.id] === 'off'"
+                          [class.badge-warning]="serverPowerStates[host.id] === 'starting' || serverPowerStates[host.id] === 'stopping'"
+                          [class.badge-info]="serverPowerStates[host.id] === 'unknown' || serverPowerStates[host.id] === 'refreshing...'"
+                          [class.badge-danger-outline]="serverPowerStates[host.id] === 'error'">
+                        {{ serverPowerStates[host.id] }}
+                    </span>
+                    <clr-icon shape="refresh"></clr-icon>
+                </div>
             </clr-dg-cell>
             <clr-dg-row-detail>
                 <ng-template clrIfExpanded>
