@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/lba-soultec/go-via/compare/v1.1.5...v1.1.6) (2025-09-12)
+
+
+### Bug Fixes
+
+* **upload:** fix image upload ([ba41fbf](https://github.com/lba-soultec/go-via/commit/ba41fbf5ef447ff9ec1d66976cfe982ea052d8aa))
+
 ## [1.1.5](https://github.com/lba-soultec/go-via/compare/v1.1.4...v1.1.5) (2025-09-12)
 
 
