@@ -1,3 +1,10 @@
+## [1.1.12](https://github.com/lba-soultec/go-via/compare/v1.1.11...v1.1.12) (2025-09-12)
+
+
+### Bug Fixes
+
+* **api:** update API endpoints for host management ([a8c3f02](https://github.com/lba-soultec/go-via/commit/a8c3f02d7f1aff94a41ddb5e35eb268a8fd3466c))
+
 ## [1.1.11](https://github.com/lba-soultec/go-via/compare/v1.1.10...v1.1.11) (2025-09-12)
 
 
