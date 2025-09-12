@@ -15,6 +15,8 @@ export class DhcpPoolManagerComponent implements OnInit {
   showPoolModalMode = false;
   editIndex: number | null = null;
 
+  editMode: boolean = false;
+
   constructor(
     private fb: FormBuilder,     
     private apiService: ApiService
@@ -32,8 +34,10 @@ export class DhcpPoolManagerComponent implements OnInit {
   showPoolModal(mode: 'add' | 'edit', id?: number) {
 
     if (mode === 'add') {
+      this.editMode = false;
       this.openAddModal();
     } else if (mode === 'edit' && typeof id === 'number') {
+      this.editMode = true;
       const index = this.pools.findIndex(pool => pool.id === id);
       if (index !== -1) {
         this.openEditModal(index);
@@ -66,16 +70,29 @@ export class DhcpPoolManagerComponent implements OnInit {
     console.log('Submitting form data:', data);
 
 
-    this.apiService.addPool(data).subscribe((resp: any) => {
-      if (resp.error) {
-        this.errors = resp.error;
-      }
-      if (resp) {
-        this.pools.push(resp);
-        this.form.reset();
-      }
-    });
+    if (this.editMode && this.editIndex !== null) {
+      const poolId = this.pools[this.editIndex].id;
+      this.apiService.updatePool(poolId, data).subscribe((resp: any) => {
+        if (resp.error) {
+          this.errors = resp.error;
+        }
+        if (resp) {
+          this.pools[this.editIndex] = resp;
+          this.form.reset();
+        }
+      });
+    } else {
+      this.apiService.addPool(data).subscribe((resp: any) => {
+        if (resp.error) {
+          this.errors = resp.error;
+        }
+        if (resp) {
+          this.pools.push(resp);
+          this.form.reset();
+        }
+      });
 
+    }
     this.showPoolModalMode = false;
     this.editIndex = null;
   }

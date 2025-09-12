@@ -174,10 +174,15 @@
   </clr-wizard-page>
 
   <clr-wizard-page>
+
     <ng-template clrPageTitle>Select Hosts</ng-template>
     <clr-alert *ngIf="errorFlag" [clrAlertType]="'alert-danger'" [clrCloseButtonAriaLabel]="'Close Error Alert'">
       <clr-alert-item *ngFor="let error of model.errors">
         {{ error.subject }}: {{ error.message }}
+      </clr-alert-item>
+      <!-- New alert item for configuration retrieval success -->
+      <clr-alert-item *ngIf="configRetrievalSuccessFlag">
+        Configuration retrieved successfully!
       </clr-alert-item>
     </clr-alert>
     <p>Select the Hosts you want to continue with</p>
