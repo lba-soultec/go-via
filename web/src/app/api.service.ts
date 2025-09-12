@@ -212,27 +212,27 @@ export class ApiService {
 
   public restartHost(hostId, payload) {
     return this.httpClient.post(
-      `https://${window.location.host}/v1/hosts/${hostId}/reboot`,
+      `https://${window.location.host}/v1/ilohosts/${hostId}/reboot`,
       payload
     );
   }
   public addHostVlan(hostId, payload)  {
     console.log(payload)
     return this.httpClient.post(
-      `https://${window.location.host}/v1/hosts/${hostId}/setvlanID`,
+      `https://${window.location.host}/v1/ilohosts/${hostId}/setvlanID`,
       payload
     );
   }
   public shutdownHost(hostId, payload) {
     return this.httpClient.post(
-      `https://${window.location.host}/v1/hosts/${hostId}/shutdown`,
+      `https://${window.location.host}/v1/ilohosts/${hostId}/shutdown`,
       payload
     );
   }
   public startHost(hostId, payload) {
     console.log(payload)
     return this.httpClient.post(
-      `https://${window.location.host}/v1/hosts/${hostId}/start`,
+      `https://${window.location.host}/v1/ilohosts/${hostId}/start`,
       payload
     );
   }
