@@ -32,6 +32,8 @@ export class DhcpPoolManagerComponent implements OnInit {
   ngOnInit(): void {}
 
   showPoolModal(mode: 'add' | 'edit', id?: number) {
+    console.log('showPoolModal called with mode:', mode, 'id:', id);
+    console.log('Current pools:', this.pools);
 
     if (mode === 'add') {
       this.editMode = false;
@@ -39,11 +41,15 @@ export class DhcpPoolManagerComponent implements OnInit {
     } else if (mode === 'edit' && typeof id === 'number') {
       this.editMode = true;
       const index = this.pools.findIndex(pool => pool.id === id);
+      console.log('Found pool index:', index, 'for id:', id);
       if (index !== -1) {
+        console.log('Pool to edit:', this.pools[index]);
         this.openEditModal(index);
+      } else {
+        console.error('Pool not found with id:', id);
+        this.errors = ['Pool not found'];
       }
     }
-    
   }
 
   openAddModal() {
@@ -53,9 +59,13 @@ export class DhcpPoolManagerComponent implements OnInit {
   }
 
   openEditModal(index: number) {
+    console.log('openEditModal called with index:', index);
+    console.log('Pool at index:', this.pools[index]);
+    
     this.editIndex = index;
     this.form.patchValue(this.pools[index]);
     this.showPoolModalMode = true;
+    this.errors = []; // Clear any previous errors
   }
 
   submit() {
@@ -72,16 +82,26 @@ export class DhcpPoolManagerComponent implements OnInit {
 
     if (this.editMode && this.editIndex !== null) {
       const poolId = this.pools[this.editIndex].id;
+      console.log('Edit mode - Pool ID:', poolId, 'Edit Index:', this.editIndex, 'Pool:', this.pools[this.editIndex]);
+      
+      if (!poolId || poolId === 0) {
+        console.error('Invalid pool ID for update:', poolId);
+        this.errors = ['Invalid pool ID for update'];
+        return;
+      }
+      
       this.apiService.updatePool(poolId, data).subscribe((resp: any) => {
         if (resp.error) {
           this.errors = resp.error;
         }
         if (resp) {
-          this.pools[this.editIndex] = resp;
+          this.pools[this.editIndex!] = resp;
           this.form.reset();
+          this.poolsChange.emit(this.pools);
         }
       });
     } else {
+      console.log('Add mode - Creating new pool');
       this.apiService.addPool(data).subscribe((resp: any) => {
         if (resp.error) {
           this.errors = resp.error;
@@ -89,9 +109,9 @@ export class DhcpPoolManagerComponent implements OnInit {
         if (resp) {
           this.pools.push(resp);
           this.form.reset();
+          this.poolsChange.emit(this.pools);
         }
       });
-
     }
     this.showPoolModalMode = false;
     this.editIndex = null;
