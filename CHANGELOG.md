@@ -1,3 +1,10 @@
+## [1.1.5](https://github.com/lba-soultec/go-via/compare/v1.1.4...v1.1.5) (2025-09-12)
+
+
+### Bug Fixes
+
+* **intermediate:** update intermediate changes ([74594a2](https://github.com/lba-soultec/go-via/commit/74594a2bb52db3aae967e622dad277871225ab85))
+
 ## [1.1.4](https://github.com/lba-soultec/go-via/compare/v1.1.3...v1.1.4) (2025-09-10)
 
 
