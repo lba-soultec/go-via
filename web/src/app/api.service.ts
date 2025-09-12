@@ -22,26 +22,26 @@ export class ApiService {
 
   public getHosts() {
     return this.httpClient.get(
-      'https://' + window.location.host + '/v1/addresses'
+      'https://' + window.location.host + '/v1/hosts'
     );
   }
 
   public getHost(id) {
     return this.httpClient.get(
-      'https://' + window.location.host + '/v1/addresses/' + id
+      'https://' + window.location.host + '/v1/hosts/' + id
     );
   }
 
   public addHost(data) {
     return this.httpClient.post(
-      'https://' + window.location.host + '/v1/addresses',
+      'https://' + window.location.host + '/v1/hosts',
       data
     );
   }
 
   public updateHost(id, data) {
     return this.httpClient.patch(
-      `https://${window.location.host}/v1/addresses/${id}`,
+      `https://${window.location.host}/v1/hosts/${id}`,
       data
     );
   }
@@ -50,7 +50,7 @@ export class ApiService {
 
   public reimageHost(id) {
     return this.httpClient.patch(
-      'https://' + window.location.host + `/v1/addresses/${id}`,
+      'https://' + window.location.host + `/v1/hosts/${id}`,
       {
         reimage: true,
         progress: 0,
@@ -61,7 +61,7 @@ export class ApiService {
 
   public cancelImageHost(id) {
     return this.httpClient.patch(
-      'https://' + window.location.host + `/v1/addresses/${id}`,
+      'https://' + window.location.host + `/v1/hosts/${id}`,
       {
         reimage: false,
         progress: 0,
@@ -80,7 +80,7 @@ export class ApiService {
 
   public deleteHost(id) {
     return this.httpClient.delete(
-      'https://' + window.location.host + `/v1/addresses/${id}`
+      'https://' + window.location.host + `/v1/hosts/${id}`
     );
   }
 
@@ -202,7 +202,7 @@ export class ApiService {
 
   public checkILOM(ip, port) {
     return this.httpClient.post(
-      'https://' + window.location.host + '/v1/hosts/checkilo',
+      'https://' + window.location.host + '/v1/ilohosts/checkilo',
       {
         iloIpAddr: ip,
         port: String(port),
@@ -265,7 +265,7 @@ export class ApiService {
 
   public getFormattedAddresses(): Observable<any[]> {
     return this.httpClient.get<any[]>(
-      `https://${window.location.host}/v1/addresses`
+      `https://${window.location.host}/v1/hosts`
     ).pipe(
       map((addresses) => {
         return addresses.map(address => ({

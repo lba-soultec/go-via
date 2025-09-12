@@ -37,11 +37,9 @@
   <clr-dg-row *ngFor="let pool of pools">
     <clr-dg-cell>{{ pool.net_address }}/{{ pool.netmask }}</clr-dg-cell>
     <clr-dg-cell>{{ pool.name }}</clr-dg-cell>
-    <clr-dg-cell>{{ pool.start_address }}</clr-dg-cell>
-    <clr-dg-cell>{{ pool.end_address }}</clr-dg-cell>
     <clr-dg-cell>{{ pool.gateway }}</clr-dg-cell>
     <clr-dg-cell>
-      <button class="btn btn-primary btn-sm" (click)="showPoolModal('edit', pool.id)">
+      <button class="btn btn-primary btn-sm" (click)="poolManager.showPoolModal('edit', pool.id)">
         edit scope
       </button>
       <button class="btn btn-warning-outline btn-sm" (click)="remove(pool.id)">

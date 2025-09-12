@@ -23,8 +23,6 @@ export class DhcpPoolManagerComponent implements OnInit {
       net_address: ['', Validators.required],
       netmask: ['', Validators.required],
       name: ['', Validators.required],
-      start_address: ['', Validators.required],
-      end_address: ['', Validators.required],
       gateway: ['', Validators.required],
     });
   }
@@ -64,6 +62,8 @@ export class DhcpPoolManagerComponent implements OnInit {
       only_serve_reimage: true,
       lease_time: 7000,
     };
+
+    console.log('Submitting form data:', data);
 
 
     this.apiService.addPool(data).subscribe((resp: any) => {
