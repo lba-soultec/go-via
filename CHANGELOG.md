@@ -1,3 +1,10 @@
+## [1.1.9](https://github.com/lba-soultec/go-via/compare/v1.1.8...v1.1.9) (2025-09-12)
+
+
+### Bug Fixes
+
+* **pool:** fix pool update ([bf68322](https://github.com/lba-soultec/go-via/commit/bf683221c33d11f9898b3b8a4a4de8c7982780a9))
+
 ## [1.1.8](https://github.com/lba-soultec/go-via/compare/v1.1.7...v1.1.8) (2025-09-12)
 
 
