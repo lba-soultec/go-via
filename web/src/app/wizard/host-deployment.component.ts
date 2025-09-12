@@ -528,37 +528,19 @@ export class HostDeploymentComponent implements OnInit {
       // Update the model with the selected group
       this.model.selectedGroup = selectedGroup;
       
-      // Print detailed group configuration
-      console.log('=== Selected Group Configuration ===');
-      console.log('Group ID:', selectedGroup.id);
-      console.log('Group Name:', selectedGroup.name);
-      console.log('Group Description:', selectedGroup.description || 'No description');
-      
+
       // Check if pool is present and log pool information
       if (selectedGroup.pool_id) {
         console.log('Pool ID:', selectedGroup.pool_id);
         
-        // Find the corresponding pool
-        const associatedPool = this.pools.find((pool) => pool.id === selectedGroup.pool_id);
-        if (associatedPool) {
-          console.log('=== Associated Pool Configuration ===');
-          console.log('Pool Name:', associatedPool.name);
-          console.log('Pool Network:', associatedPool.network);
-          console.log('Pool Range:', associatedPool.range_start + ' - ' + associatedPool.range_end);
-          console.log('Pool Gateway:', associatedPool.gateway);
-          console.log('Pool DNS:', associatedPool.dns);
-        } else {
-          console.warn('Pool not found for pool_id:', selectedGroup.pool_id);
-        }
+
       } else {
         console.warn('No pool associated with this group');
       }
       
       // Log complete group object for debugging
-      console.log('=== Complete Group Object ===');
-      console.log(JSON.stringify(selectedGroup, null, 2));
       
-      console.log('=== Group Commit Complete ===');
+
     } else {
       console.error('No group found with the selected ID:', this.selectedGroup);
       this.model.selectedGroup = null;
