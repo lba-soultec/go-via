@@ -271,8 +271,7 @@
     <clr-select-container>
       <label>Select Group</label>
       <select clrSelect name="groups" [(ngModel)]="selectedGroup" (change)="onGroupSelectionChange($event)">
-        <option *ngFor="let group of groups" [value]="group.id">{{ group.name }}: {{ group.pool.start_address }} - {{
-          group.pool.end_address }} </option>
+        <option *ngFor="let group of groups" [value]="group.id">{{ group.name }} </option>
       </select>
     </clr-select-container>
   </clr-wizard-page>

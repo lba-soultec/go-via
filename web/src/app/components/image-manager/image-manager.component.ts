@@ -1,4 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ApiService } from '../../api.service';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-image-manager',
@@ -10,43 +13,58 @@ export class ImageManagerComponent {
   @Input() images: any[] = [];
   @Output() imagesChange = new EventEmitter<any[]>();
 
-  hash = '';
-  description = '';
-  selectedFiles: FileList | null = null;
+  constructor(private apiService: ApiService) {
+
+  }
+
+
+  ngOnInit(): void {
+    this.apiService.getImages().subscribe((images: any) => {
+      this.images = images;
+    });
+  }
+  //file upload
+  hash: string;
+  description: string;
+  currentFile?: File;
   progress = 0;
   message = '';
+  selectedFiles?: FileList;
+  fileInfos?: Observable<any>;
 
   selectFile(event: Event) {
     const input = event.target as HTMLInputElement;
     this.selectedFiles = input.files;
   }
 
-  upload() {
-    if (!this.selectedFiles || this.selectedFiles.length === 0) {
-      this.message = 'No file selected!';
-      return;
+  upload(): void {
+    this.progress = 0;
+    if (this.selectedFiles) {
+      const file: File | null = this.selectedFiles.item(0);
+
+      if (file) {
+        this.currentFile = file;
+
+        this.apiService.addImage(this.currentFile, this.hash, this.description).subscribe(
+          (event: any) => {
+            if (event.type === HttpEventType.UploadProgress) {
+              this.progress = Math.round(100 * event.loaded / event.total);
+            } else if (event instanceof HttpResponse) {
+              this.message = event.body.message;
+              this.images.push(event.body);
+            }
+          },
+          (err: any) => {
+            this.progress = 0;
+
+            this.message = err?.error?.message || err?.error?.error_message || 'Could not upload the file!';
+
+            this.currentFile = undefined;
+          });
+      }
+
+      this.selectedFiles = undefined;
     }
-    // Simulate upload logic
-    const file = this.selectedFiles[0];
-    const newImage = {
-      id: Date.now(),
-      iso_image: file.name,
-      size: Math.round(file.size / (1024 * 1024)),
-      description: this.description,
-      hash: this.hash
-    };
-    this.images.push(newImage);
-    this.imagesChange.emit(this.images);
-    this.progress = 100;
-    this.message = 'Upload successful!';
-    // Reset form
-    this.selectedFiles = null;
-    this.hash = '';
-    this.description = '';
-    setTimeout(() => {
-      this.progress = 0;
-      this.message = '';
-    }, 2000);
   }
 
   remove(id: number) {
