@@ -123,7 +123,7 @@ export class HostDeploymentComponent implements OnInit {
           hostname: host.fqdn.split(".")[0],
           domain: host.fqdn.split(".").slice(1).join('.'),
           group_id: parseInt(this.selectedGroup || '', 10),
-          pool_id: this.model.selectedGroup.pool_id || 0,
+          pool_id: this.model.selectedGroup.id || 0,
           ilo_ip: host.iloIpAddr,
           ilo_fqdn: host.iloFqdn || '', // Use fqdn if available
           ilo_user: host.username,

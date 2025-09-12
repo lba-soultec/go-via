@@ -180,9 +180,11 @@
       <clr-alert-item *ngFor="let error of model.errors">
         {{ error.subject }}: {{ error.message }}
       </clr-alert-item>
-      <!-- New alert item for configuration retrieval success -->
-      <clr-alert-item *ngIf="configRetrievalSuccessFlag">
-        Configuration retrieved successfully!
+    </clr-alert>
+    <!-- Separate success alert -->
+    <clr-alert *ngIf="configRetrievalSuccessFlag" [clrAlertType]="'alert-success'" [clrAlertClosable]="true" [clrCloseButtonAriaLabel]="'Close Success Alert'">
+      <clr-alert-item>
+        Configuration retrieved successfully! You can now proceed to the next step.
       </clr-alert-item>
     </clr-alert>
     <p>Select the Hosts you want to continue with</p>
