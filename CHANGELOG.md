@@ -1,3 +1,10 @@
+## [1.1.10](https://github.com/lba-soultec/go-via/compare/v1.1.9...v1.1.10) (2025-09-12)
+
+
+### Bug Fixes
+
+* **alert:** show alert in statik ([9bfce95](https://github.com/lba-soultec/go-via/commit/9bfce95256ed89c9b251442df93429be32bec61e))
+
 ## [1.1.9](https://github.com/lba-soultec/go-via/compare/v1.1.8...v1.1.9) (2025-09-12)
 
 
