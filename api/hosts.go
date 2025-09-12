@@ -431,13 +431,25 @@ func CreateHost(c *gin.Context) {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Error("CreateHost")
+		Error(c, http.StatusInternalServerError, err) // 500
+		return
 	}
 
 	network, err := netip.ParsePrefix(pool.NetAddress + "/" + strconv.Itoa(pool.Netmask))
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": err,
+			"form": form,
 		}).Error("CreateHost")
+		fmt.Println(form, "hodor")
+		logrus.WithFields(logrus.Fields{
+			"ip":      ip,
+			"network": network,
+			"pool-id": pool.ID,
+			"pool":    pool.Name,
+			"error":   err,
+		}).Warn("ip validation failed")
+		Error(c, http.StatusInternalServerError, err) // 500
+		return
 	}
 
 	if network.Contains(ip) {
@@ -446,7 +458,14 @@ func CreateHost(c *gin.Context) {
 			"network": network,
 		}).Debug("ip validation successful")
 	} else {
-		Error(c, http.StatusBadRequest, fmt.Errorf("the ip address is not in the scope of the dhcp pool associated with the group")) // 400
+		logrus.WithFields(logrus.Fields{
+			"ip":      ip,
+			"network": network,
+			"pool-id": pool.ID,
+			"pool":    pool.Name,
+			"error":   err,
+		}).Warn("ip validation failed")
+		Error(c, http.StatusBadRequest, fmt.Errorf("the ip address is not in the scope of the dhcp pool associated with the group - %s/%d", pool.NetAddress, pool.Netmask)) // 400
 		return
 	}
 

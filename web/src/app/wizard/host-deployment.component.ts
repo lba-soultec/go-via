@@ -17,12 +17,12 @@ export class HostDeploymentComponent implements OnInit {
   @ViewChild('wizard', { static: true }) wizard: ClrWizard | undefined;
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef;
   @ViewChild(DhcpPoolManagerComponent) poolManager?: DhcpPoolManagerComponent;
-   @ViewChild(GroupManagerComponent) groupManager?: GroupManagerComponent;
+  @ViewChild(GroupManagerComponent) groupManager?: GroupManagerComponent;
   open = false;
   model: any;
   loadingFlag = false;
   errorFlag = false;
-    pools: any[] = [];
+  pools: any[] = [];
   selectedHosts: Host[] = []; // Use the Host type for selected hosts
   showAddGroupForm = false;
   groups: any[] = [];
@@ -33,7 +33,7 @@ export class HostDeploymentComponent implements OnInit {
   // Add this property for the modal open state
   dhcpPoolModalOpen = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService) { }
 
   ngOnInit() {
     this.model = {
@@ -56,12 +56,22 @@ export class HostDeploymentComponent implements OnInit {
     // Fetch groups from the API
     this.apiService.getGroups().subscribe((groups: any) => {
       this.groups = groups;
+      // Auto-select the first group if only one exists
+      this.setDefaultGroupSelection();
     });
 
     // Fetch Images from the API
     this.apiService.getImages().subscribe((images: any) => {
       this.images = images;
     });
+  }
+
+  setDefaultGroupSelection(): void {
+    if (this.groups.length > 0) {
+      this.selectedGroup = this.groups[0].id.toString();
+      this.model.selectedGroup = this.groups[0];
+      console.log('Auto-selected default group:', this.model.selectedGroup);
+    }
   }
 
   selectVendor(vendor: string): void {
@@ -92,14 +102,16 @@ export class HostDeploymentComponent implements OnInit {
         reject(new Error('No group selected.'));
         return;
       }
-  
+
       if (this.selectedHosts.length === 0) {
         console.error('No hosts selected.');
         this.model.errors.push(new Error('No hosts selected.'));
         reject(new Error('No hosts selected.'));
         return;
       }
-  
+
+
+
       // Prepare all host data for the API calls
       const hostRequests = this.selectedHosts.map((host) => {
         const hostData = {
@@ -110,7 +122,7 @@ export class HostDeploymentComponent implements OnInit {
           hostname: host.fqdn.split(".")[0],
           domain: host.fqdn.split(".").slice(1).join('.'),
           group_id: parseInt(this.selectedGroup || '', 10),
-          pool_id: parseInt(this.model.selectedGroup.pool_id || '', 10),
+          pool_id: this.model.selectedGroup.id || 0,
           ilo_ip: host.iloIpAddr,
           ilo_fqdn: host.iloFqdn || '', // Use fqdn if available
           ilo_user: host.username,
@@ -118,11 +130,12 @@ export class HostDeploymentComponent implements OnInit {
           ilo_port: String(host.iloPort),
           ilo_api_flavour: this.getApiFlavourFromVendor(),
         };
-  
+
+        console.log('Prepared host data for API:', hostData);
         // Return the API call as a promise
         return this.addHostPromise(hostData);
       });
-  
+
       // Wait for all API calls to complete
       Promise.all(hostRequests)
         .then((responses) => {
@@ -149,7 +162,7 @@ export class HostDeploymentComponent implements OnInit {
       this.model.hosts = [];
     }
 
-    if ( this.model.useSameCreds) {
+    if (this.model.useSameCreds) {
       this.newHostInput.username = this.model.username;
       this.newHostInput.password = this.model.password;
     }
@@ -176,7 +189,7 @@ export class HostDeploymentComponent implements OnInit {
       if (data.ks) {
         data.ks = btoa(data.ks);
       }
-  
+
       this.apiService.addHost(data).subscribe({
         next: (response: any) => {
           if (response.id) {
@@ -341,7 +354,7 @@ export class HostDeploymentComponent implements OnInit {
     }
 
     for (const host of this.model.hosts) {
-      
+
       await this.validateHost(host); // Wait for each host validation to complete
     }
 
@@ -437,16 +450,16 @@ export class HostDeploymentComponent implements OnInit {
             });
           } else {
             console.log(`Host ${host.iloIpAddr} processed successfully. received Hostconfig:`, response.hostConfig);
-            }
-            // assume response.hostConfig is an array
-            if (!host.ifaceConfig) {
-              host.ifaceConfig = []; // Initialize ifaceConfig if undefined
-            }
-            for (const ifaceConfig of response.hostConfig) {
-              console.log(`received Hostconfig:`, ifaceConfig);
-              // Push the host configuration into the ifaceConfig array
-              host.ifaceConfig.push(ifaceConfig);
-            }
+          }
+          // assume response.hostConfig is an array
+          if (!host.ifaceConfig) {
+            host.ifaceConfig = []; // Initialize ifaceConfig if undefined
+          }
+          for (const ifaceConfig of response.hostConfig) {
+            console.log(`received Hostconfig:`, ifaceConfig);
+            // Push the host configuration into the ifaceConfig array
+            host.ifaceConfig.push(ifaceConfig);
+          }
         })
         .catch((error) => {
           hasError = true;
@@ -498,6 +511,59 @@ export class HostDeploymentComponent implements OnInit {
     }
   }
 
+  onGroupCommit(): void {
+    console.log('=== Group Commit Function Triggered ===');
+    
+    // Update selectedGroup variable if not already set
+    if (!this.selectedGroup && this.groups.length > 0) {
+      this.selectedGroup = this.groups[0].id.toString();
+      console.log('Auto-selected first group as default:', this.selectedGroup);
+    }
+
+    // Find the selected group by ID
+    const selectedGroup = this.groups.find((group) => group.id === parseInt(this.selectedGroup || '', 10));
+    
+    if (selectedGroup) {
+      // Update the model with the selected group
+      this.model.selectedGroup = selectedGroup;
+      
+      // Print detailed group configuration
+      console.log('=== Selected Group Configuration ===');
+      console.log('Group ID:', selectedGroup.id);
+      console.log('Group Name:', selectedGroup.name);
+      console.log('Group Description:', selectedGroup.description || 'No description');
+      
+      // Check if pool is present and log pool information
+      if (selectedGroup.pool_id) {
+        console.log('Pool ID:', selectedGroup.pool_id);
+        
+        // Find the corresponding pool
+        const associatedPool = this.pools.find((pool) => pool.id === selectedGroup.pool_id);
+        if (associatedPool) {
+          console.log('=== Associated Pool Configuration ===');
+          console.log('Pool Name:', associatedPool.name);
+          console.log('Pool Network:', associatedPool.network);
+          console.log('Pool Range:', associatedPool.range_start + ' - ' + associatedPool.range_end);
+          console.log('Pool Gateway:', associatedPool.gateway);
+          console.log('Pool DNS:', associatedPool.dns);
+        } else {
+          console.warn('Pool not found for pool_id:', selectedGroup.pool_id);
+        }
+      } else {
+        console.warn('No pool associated with this group');
+      }
+      
+      // Log complete group object for debugging
+      console.log('=== Complete Group Object ===');
+      console.log(JSON.stringify(selectedGroup, null, 2));
+      
+      console.log('=== Group Commit Complete ===');
+    } else {
+      console.error('No group found with the selected ID:', this.selectedGroup);
+      this.model.selectedGroup = null;
+    }
+  }
+
   addFqdnToHosts(): void {
     this.model.hosts.forEach((host) => {
       if (host.hostname && this.model.domain) {
@@ -516,22 +582,22 @@ export class HostDeploymentComponent implements OnInit {
   onGroupAdded() {
     if (this.showAddGroupForm) {
       this.groupManager.submitGroup().subscribe((data: any) => {
-      if (data.id) {
-        this.groups.push(data);
-      }
-    }, (data: any) => {
-      if (data.status) {
-        console.error('Error adding group:', data.status, data.message);
-      } else {
-        console.error('Error adding group:', data);
-      }
+        if (data.id) {
+          this.groups.push(data);
+        }
+      }, (data: any) => {
+        if (data.status) {
+          console.error('Error adding group:', data.status, data.message);
+        } else {
+          console.error('Error adding group:', data);
+        }
 
-    });
-    this.showAddGroupForm = false;
-    
+      });
+      this.showAddGroupForm = false;
+
+    }
+    this.wizard?.next();
   }
-  this.wizard?.next();
- }
 }
 
 

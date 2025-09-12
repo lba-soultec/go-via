@@ -265,7 +265,7 @@
     </clr-datagrid>
   </clr-wizard-page>
 
-  <clr-wizard-page>
+  <clr-wizard-page (clrWizardPageOnCommit)="onGroupCommit()" >
     <ng-template clrPageTitle>Select a Group</ng-template>
     <p>Select a group from the dropdown below:</p>
     <clr-select-container>
