@@ -1,3 +1,10 @@
+## [1.1.7](https://github.com/lba-soultec/go-via/compare/v1.1.6...v1.1.7) (2025-09-12)
+
+
+### Bug Fixes
+
+* **pool:** use pool selection and verify in frontend - omprove logging in backend ([4213afe](https://github.com/lba-soultec/go-via/commit/4213afebbb44a2e6a4d5d5b8fab6f89983573414))
+
 ## [1.1.6](https://github.com/lba-soultec/go-via/compare/v1.1.5...v1.1.6) (2025-09-12)
 
 
