@@ -1,3 +1,10 @@
+## [1.1.8](https://github.com/lba-soultec/go-via/compare/v1.1.7...v1.1.8) (2025-09-12)
+
+
+### Bug Fixes
+
+* **minimal:** a mvp running ([07b6593](https://github.com/lba-soultec/go-via/commit/07b6593cb152c9e0717115aea9c99b12ecdd0476))
+
 ## [1.1.7](https://github.com/lba-soultec/go-via/compare/v1.1.6...v1.1.7) (2025-09-12)
 
 
