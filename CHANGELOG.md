@@ -1,3 +1,10 @@
+## [1.1.13](https://github.com/lba-soultec/go-via/compare/v1.1.12...v1.1.13) (2025-09-12)
+
+
+### Bug Fixes
+
+* **state:** add server state button ([d77f3e5](https://github.com/lba-soultec/go-via/commit/d77f3e57bd9319deb20d69fd403dd824be0af7bf))
+
 ## [1.1.12](https://github.com/lba-soultec/go-via/compare/v1.1.11...v1.1.12) (2025-09-12)
 
 
