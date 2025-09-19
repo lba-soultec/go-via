@@ -31,7 +31,14 @@
                 {{ isDatagridVisible(group.id) ? 'Hide' : 'Show' }} Hosts
             </label>
         </clr-toggle-wrapper>
+
     </clr-toggle-container>
+    <button class="btn btn-sm btn-icon btn-outline" 
+            (click)="refreshPowerStatesForGroup(group.id)" 
+            title="Refresh Power States"
+            *ngIf="isDatagridVisible(group.id)">
+        <clr-icon shape="refresh"></clr-icon>
+    </button>
     <clr-datagrid *ngIf="isDatagridVisible(group.id)">
         <clr-dg-column>fqdn</clr-dg-column>
         <clr-dg-column>ip address</clr-dg-column>
@@ -66,7 +73,6 @@
                           [class.badge-danger-outline]="serverPowerStates[host.id] === 'error'">
                         {{ serverPowerStates[host.id] }}
                     </span>
-                    <clr-icon shape="refresh"></clr-icon>
                 </div>
             </clr-dg-cell>
             <clr-dg-row-detail>
