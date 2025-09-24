@@ -234,10 +234,8 @@ export class ManageGroupsComponent implements OnInit {
         }
       );
 
-
-    
-
     });
+  
   }
   
 

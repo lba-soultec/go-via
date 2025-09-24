@@ -12,14 +12,17 @@ import (
 )
 
 type PoolForm struct {
-	Name       string `json:"name" gorm:"type:varchar(255);not null" binding:"required" `
-	Netmask    int    `json:"netmask" gorm:"type:integer;not null" binding:"required" `
-	NetAddress string `json:"net_address" gorm:"type:varchar(15);not null"`
-
-	LeaseTime int `json:"lease_time" gorm:"type:bigint" `
-
+	Name             string `json:"name" gorm:"type:varchar(255);not null" binding:"required" `
+	Netmask          int    `json:"netmask" gorm:"type:integer;not null" binding:"required" `
+	StartAddress     string `json:"start_address" gorm:"type:varchar(15);not null" binding:"required" `
+	EndAddress       string `json:"end_address" gorm:"type:varchar(15);not null" binding:"required" `
+	NetAddress       string `json:"net_address" gorm:"type:varchar(15);not null"`
+	LeaseTime        int    `json:"lease_time" gorm:"type:bigint" binding:"required" `
 	Gateway          string `json:"gateway" gorm:"type:varchar(15)" binding:"required" `
 	OnlyServeReimage bool   `json:"only_serve_reimage" gorm:"type:boolean"`
+
+	AuthorizedVlan int    `json:"authorized_vlan" gorm:"type:bigint"`
+	ManagedRef     string `json:"managed_reference"`
 }
 
 type Pool struct {
@@ -69,7 +72,7 @@ func (p *Pool) BeforeSave(tx *gorm.DB) error {
 }
 
 // Next returns the next free address in the pool (that is not reserved nor already leased)
-/*
+
 func (p *PoolWithHosts) Next() (ip net.IP, err error) {
 	cidrMask := "/" + strconv.Itoa(p.Netmask)
 	startIP, startNet, err := net.ParseCIDR(p.StartAddress + cidrMask)
@@ -102,7 +105,6 @@ func (p *PoolWithHosts) Next() (ip net.IP, err error) {
 
 	return nil, fmt.Errorf("could not find a free address")
 }
-*/
 
 func (p *PoolWithHosts) IsAvailable(ip net.IP) error {
 	return p.IsAvailableExcept(ip, "")
@@ -165,4 +167,13 @@ func (p *Pool) LastAddr() (net.IP, error) {
 	ip := make(net.IP, len(startNet.IP.To4()))
 	binary.BigEndian.PutUint32(ip, binary.BigEndian.Uint32(startNet.IP.To4())|^binary.BigEndian.Uint32(startNet.Mask))
 	return ip, nil
+}
+
+func next(ip net.IP) {
+	for j := len(ip) - 1; j >= 0; j-- {
+		ip[j]++
+		if ip[j] > 0 {
+			break
+		}
+	}
 }

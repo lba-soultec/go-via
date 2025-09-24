@@ -25,6 +25,8 @@ export class DhcpPoolManagerComponent implements OnInit {
       net_address: ['', Validators.required],
       netmask: ['', Validators.required],
       name: ['', Validators.required],
+      start_address: ['', Validators.required],
+      end_address: ['', Validators.required],
       gateway: ['', Validators.required],
     });
   }
