@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/lba-soultec/go-via/compare/v1.1.13...v1.2.0) (2025-09-24)
+
+
+### Features
+
+* **dhcp:** re-enable dhcp for re-imaging ([971ef5f](https://github.com/lba-soultec/go-via/commit/971ef5f81ed3644dd2a8a9f197d95bda492f75c8))
+
 ## [1.1.13](https://github.com/lba-soultec/go-via/compare/v1.1.12...v1.1.13) (2025-09-12)
 
 
