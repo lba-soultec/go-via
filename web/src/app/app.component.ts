@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ApiService } from './api.service';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
+import { ClarityIcons, refreshIcon } from '@cds/core/icon';
+import { loadCoreIconSet } from '@cds/core/icon';
+import '@cds/core/icon/register.js';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +17,11 @@ export class AppComponent implements OnInit {
   username: string;
   showAbout: boolean = false;
 
-  constructor(private apiService: ApiService, public router: Router, private authService: AuthService) {}
+  constructor(private apiService: ApiService, public router: Router, private authService: AuthService) {
+    // Initialize Clarity Icons
+    loadCoreIconSet();
+    ClarityIcons.addIcons(refreshIcon);
+  }
 
   ngOnInit(): void {
 

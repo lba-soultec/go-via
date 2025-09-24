@@ -2,7 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild, ɵɵtrustConstantResourceUrl 
 import { ApiService } from '../api.service';
 import { FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { cloudIcon, ClarityIcons, atomIconName } from '@cds/core/icon';
+import { ClarityIcons } from '@cds/core/icon';
 import '@cds/core/icon/register.js';
 import '@cds/core/accordion/register.js';
 import '@cds/core/alert/register.js';
@@ -67,6 +67,7 @@ export class ManageGroupsComponent implements OnInit {
    @ViewChild(GroupManagerComponent) groupManager?: GroupManagerComponent;
 
   constructor(private apiService: ApiService, private HostformBuilder: UntypedFormBuilder, private GroupformBuilder: UntypedFormBuilder, private HostVlanformBuilder: UntypedFormBuilder) {
+    
     this.Hostform = this.HostformBuilder.group({
       fqdn: ['', [Validators.required]],
       ip: ['', [Validators.required]],
@@ -170,14 +171,16 @@ export class ManageGroupsComponent implements OnInit {
   }
 
   fetchPowerStatesForGroup(groupId: number) {
-    this.serverPowerStates = {};
     const group = this.groups.find(g => g.id === groupId);
     if (group && group.hosts) {
+      // Clear existing power states for this group to force refresh
       group.hosts.forEach(host => {
-        // Only fetch if we don't already have the power state
-        if (!this.serverPowerStates[host.id]) {
-          this.fetchPowerState(host.id);
-        }
+        delete this.serverPowerStates[host.id];
+      });
+      
+      // Fetch fresh power states for all hosts in the group
+      group.hosts.forEach(host => {
+        this.fetchPowerState(host.id);
       });
     }
   }
@@ -231,10 +234,8 @@ export class ManageGroupsComponent implements OnInit {
         }
       );
 
-
-    
-
     });
+  
   }
   
 

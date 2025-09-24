@@ -31,6 +31,7 @@
                 {{ isDatagridVisible(group.id) ? 'Hide' : 'Show' }} Hosts
             </label>
         </clr-toggle-wrapper>
+
     </clr-toggle-container>
     <clr-datagrid *ngIf="isDatagridVisible(group.id)">
         <clr-dg-column>fqdn</clr-dg-column>
