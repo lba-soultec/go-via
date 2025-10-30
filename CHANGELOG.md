@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/lba-soultec/go-via/compare/v1.3.0...v1.3.1) (2025-10-30)
+
+
+### Bug Fixes
+
+* **refresh:** add button. need to figure out what happens in func UpdateHost(c *gin.Context)  when reimageing ([107b8ac](https://github.com/lba-soultec/go-via/commit/107b8acc25245b9814b7529d837302e82b16002c))
+
 # [1.3.0](https://github.com/lba-soultec/go-via/compare/v1.2.0...v1.3.0) (2025-10-30)
 
 
