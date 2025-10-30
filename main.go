@@ -4,6 +4,8 @@
 package main
 
 import (
+	"flag"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,6 +27,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	"github.com/koding/multiconfig"
 	_ "github.com/maxiepax/go-via/docs"
 	_ "github.com/maxiepax/go-via/statik"
 	"github.com/rakyll/statik/fs"
@@ -52,10 +55,75 @@ func main() {
 		"commit": commit,
 	}).Infof("Startup")
 
-	// load config file
-	conf := config.Load()
+	//enable config
+	d := multiconfig.New()
+
+	conf := new(config.Config)
+
+	//try to load environment variables and flags.
+	err := d.Load(conf)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Info("failed to load config")
+	}
+
+	//if a file has been implied, also load the content of the configuration file.
+	if conf.File != "" {
+		d = multiconfig.NewWithPath(conf.File)
+
+		err = d.Load(conf)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Info("failed to load config")
+		}
+	}
+
+	//validate configuration file
+	err = d.Validate(conf)
+	if err != nil {
+		flag.Usage()
+		logrus.WithFields(logrus.Fields{
+			"err": err,
+		}).Info("failed to load config")
+	}
+
+	//if no environemnt variables, or configuration file has been declared, serve on all interfaces.
+	if len(conf.Network.Interfaces) == 0 {
+		logrus.Warning("no interfaces have been configured, trying to find interfaces to serve to, will serve on all.")
+		i, err := net.Interfaces()
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"err": err,
+			}).Info("failed to find a usable interface")
+		}
+		for _, v := range i {
+			// dont use loopback interfaces
+			if v.Flags&net.FlagLoopback != 0 {
+				continue
+			}
+			// dont use ptp interfaces
+			if v.Flags&net.FlagPointToPoint != 0 {
+				continue
+			}
+			_, _, err := findIPv4Addr(&v)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"err":   err,
+					"iface": v.Name,
+				}).Warning("interaces does not have a usable ipv4 address")
+				continue
+			}
+			conf.Network.Interfaces = append(conf.Network.Interfaces, v.Name)
+		}
+	}
+
+	// load secrets key
+	key := secrets.Init()
 
 	//connect to database
+	//db.Connect(true)
 	if conf.Debug {
 		db.Connect(true)
 		logrus.SetLevel(logrus.DebugLevel)
@@ -65,7 +133,23 @@ func main() {
 	}
 
 	//migrate all models
-	db.Migrate([]interface{}{&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{}, &models.Theme{}})
+	err = db.DB.AutoMigrate(&models.Pool{}, &models.Host{}, &models.Option{}, &models.DeviceClass{}, &models.Group{}, &models.Image{}, &models.User{})
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	//create the device classes for x86 and arm
+	//64bit x86 UEFI
+	var x86_64 models.DeviceClass
+
+	if res := db.DB.FirstOrCreate(&x86_64, models.DeviceClass{DeviceClassForm: models.DeviceClassForm{Name: "PXE-UEFI_x64", VendorClass: "PXEClient:Arch:00007"}}); res.Error != nil {
+		logrus.Warning(res.Error)
+	}
+	//64bit ARM UEFI
+	var arm_64 models.DeviceClass
+	if res := db.DB.FirstOrCreate(&arm_64, models.DeviceClass{DeviceClassForm: models.DeviceClassForm{Name: "PXE-UEFI_ARM64", VendorClass: "PXEClient:Arch:00011"}}); res.Error != nil {
+		logrus.Warning(res.Error)
+	}
 
 	//create admin user if it doesn't exist
 	var adm models.User
@@ -74,8 +158,15 @@ func main() {
 		logrus.Warning(res.Error)
 	}
 
-	// load secrets key
-	key := secrets.Init()
+	// DHCPd
+	logrus.Info("Check Config for DHCP", conf, conf.DisableDhcp)
+	if !conf.DisableDhcp {
+		logrus.Info("Starting DHCP")
+		for _, v := range conf.Network.Interfaces {
+			logrus.Infof("Starting DHCP on %s", v)
+			go serve(v)
+		}
+	}
 
 	// TFTPd
 	go TFTPd(conf)

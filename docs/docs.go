@@ -2342,15 +2342,24 @@ const docTemplate = `{
         "models.Pool": {
             "type": "object",
             "required": [
+                "end_address",
                 "gateway",
+                "lease_time",
                 "name",
-                "netmask"
+                "netmask",
+                "start_address"
             ],
             "properties": {
+                "authorized_vlan": {
+                    "type": "integer"
+                },
                 "created_at": {
                     "type": "string"
                 },
                 "deleted_at": {
+                    "type": "string"
+                },
+                "end_address": {
                     "type": "string"
                 },
                 "gateway": {
@@ -2362,6 +2371,9 @@ const docTemplate = `{
                 "lease_time": {
                     "type": "integer"
                 },
+                "managed_reference": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2373,6 +2385,9 @@ const docTemplate = `{
                 },
                 "only_serve_reimage": {
                     "type": "boolean"
+                },
+                "start_address": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -2382,16 +2397,28 @@ const docTemplate = `{
         "models.PoolForm": {
             "type": "object",
             "required": [
+                "end_address",
                 "gateway",
+                "lease_time",
                 "name",
-                "netmask"
+                "netmask",
+                "start_address"
             ],
             "properties": {
+                "authorized_vlan": {
+                    "type": "integer"
+                },
+                "end_address": {
+                    "type": "string"
+                },
                 "gateway": {
                     "type": "string"
                 },
                 "lease_time": {
                     "type": "integer"
+                },
+                "managed_reference": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -2404,6 +2431,9 @@ const docTemplate = `{
                 },
                 "only_serve_reimage": {
                     "type": "boolean"
+                },
+                "start_address": {
+                    "type": "string"
                 }
             }
         },
