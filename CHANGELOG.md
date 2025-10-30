@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/lba-soultec/go-via/compare/v1.2.0...v1.3.0) (2025-10-30)
+
+
+### Features
+
+* **refresh:** improve refresh button ([2439ebf](https://github.com/lba-soultec/go-via/commit/2439ebfa46c7b9170b1055cddf38997213dac04e))
+
 # [1.2.0](https://github.com/lba-soultec/go-via/compare/v1.1.13...v1.2.0) (2025-09-24)
 
 
