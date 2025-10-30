@@ -7,6 +7,7 @@ import (
 	//"github.com/davecgh/go-spew/spew"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"github.com/maxiepax/go-via/dhcpd"
 	"github.com/mdlayher/raw"
 	"github.com/sirupsen/logrus"
 )
@@ -90,7 +91,7 @@ func serve(intf string) {
 				source = "relayed"
 			}
 
-			resp, err := processPacket(t, req, sourceNet, ip)
+			resp, err := dhcpd.ProcessPacket(t, req, sourceNet, ip)
 
 			if err != nil {
 				logrus.WithFields(logrus.Fields{

@@ -37,7 +37,7 @@
             (click)="refreshPowerStatesForGroup(group.id)" 
             title="Refresh Power States"
             *ngIf="isDatagridVisible(group.id)">
-        <clr-icon shape="refresh"></clr-icon>
+        <clr-icon shape="refresh">refresh</clr-icon>
     </button>
     <clr-datagrid *ngIf="isDatagridVisible(group.id)">
         <clr-dg-column>fqdn</clr-dg-column>

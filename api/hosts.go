@@ -486,7 +486,6 @@ func CreateHost(c *gin.Context) {
 		logrus.WithFields(logrus.Fields{
 			"form": form,
 		}).Error("CreateHost")
-		fmt.Println(form, "hodor")
 		logrus.WithFields(logrus.Fields{
 			"ip":      ip,
 			"network": network,
